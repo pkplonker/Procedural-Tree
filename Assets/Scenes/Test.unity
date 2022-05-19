@@ -252,8 +252,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   radius: 0.5
   sliceHeight: 0.2
-  numberOfSlices: 5
-  amountOfVertsAroundCircumference: 6
+  numberOfSlices: 2
+  amountOfVertsAroundCircumference: 19
   vertTestStart: 0
   vertTestEnd: 0
 --- !u!4 &1075212034

@@ -40,14 +40,14 @@ public class TreeGenerator : MonoBehaviour
 	{
 		vertices = GenerateVerts();
 
-		triangles = GenerateTriangles();
+		GenerateTriangles();
 
 
 		treeMesh.Clear();
 
 		treeMesh.SetVertices(vertices);
 		treeMesh.SetTriangles(triangles, 0);
-
+		treeMesh.RecalculateNormals();
 		return treeMesh;
 	}
 
@@ -67,24 +67,24 @@ public class TreeGenerator : MonoBehaviour
 	}
 
 	private void VertVisualiser()
-	{Debug.DrawLine(vertices[vertTestStart], vertices[vertTestEnd], Color.magenta);
-
+	{
+		Debug.DrawLine(vertices[vertTestStart], vertices[vertTestEnd], Color.magenta);
 	}
+
 	private List<int> GenerateTriangles()
 	{
-		List<int> triangles = new List<int>();
-		for (int i = 0; i < numberOfSlices-1; i++)
+		for (int i = 0; i < numberOfSlices - 1; i++)
 		{
-			GenerateLayerTriangles(triangles,i);
-
+			GenerateLayerTriangles(i);
 		}
+
 		return triangles;
 	}
 
-	private void GenerateLayerTriangles(List<int> ints, int layer)
+	private void GenerateLayerTriangles(int layer)
 	{
 		int layerAddition = layer * amountOfVertsAroundCircumference;
-		for (int i = 0; i < amountOfVertsAroundCircumference-1; i++)
+		for (int i = 0; i < amountOfVertsAroundCircumference - 1; i++)
 		{
 			int root = i + layerAddition;
 			int rootLeft = root + 1;
@@ -94,17 +94,22 @@ public class TreeGenerator : MonoBehaviour
 			Debug.DrawLine(vertices[root], vertices[rootLeft], Color.black);
 			Debug.DrawLine(vertices[rootLeft], vertices[rootUpleft], Color.black);
 			Debug.DrawLine(vertices[rootUpleft], vertices[root], Color.black);
-
 			Debug.DrawLine(vertices[root], vertices[rootUpleft], Color.red);
 			Debug.DrawLine(vertices[rootUpleft], vertices[rootUp], Color.red);
 			Debug.DrawLine(vertices[rootUp], vertices[root], Color.red);
 
+			triangles.Add(root);
+			triangles.Add(rootLeft);
+			triangles.Add(rootUpleft);
+			triangles.Add(root);
+			triangles.Add(rootUpleft);
+			triangles.Add(rootUp);
 		}
 
-		int start = amountOfVertsAroundCircumference - 1+layerAddition;
-		int startLeft = layerAddition; 
-		int startLeftUp = start + 1; 
-		int startup = start+ amountOfVertsAroundCircumference ; 
+		int start = amountOfVertsAroundCircumference - 1 + layerAddition;
+		int startLeft = layerAddition;
+		int startLeftUp = start + 1;
+		int startup = start + amountOfVertsAroundCircumference;
 		Debug.DrawLine(vertices[start], vertices[startLeft], Color.green);
 		Debug.DrawLine(vertices[startLeft], vertices[startLeftUp], Color.green);
 		Debug.DrawLine(vertices[startLeftUp], vertices[start], Color.green);
@@ -112,6 +117,13 @@ public class TreeGenerator : MonoBehaviour
 		Debug.DrawLine(vertices[start], vertices[startLeftUp], Color.blue);
 		Debug.DrawLine(vertices[startLeftUp], vertices[startup], Color.blue);
 		Debug.DrawLine(vertices[startup], vertices[start], Color.blue);
+
+		triangles.Add(start);
+		triangles.Add(startLeft);
+		triangles.Add(startLeftUp);
+		triangles.Add(start);
+		triangles.Add(startLeftUp);
+		triangles.Add(startup);
 	}
 
 
