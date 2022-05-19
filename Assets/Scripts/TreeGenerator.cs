@@ -91,39 +91,39 @@ public class TreeGenerator : MonoBehaviour
 			int rootUpleft = root + amountOfVertsAroundCircumference + 1;
 			int rootUp = root + amountOfVertsAroundCircumference;
 
-			Debug.DrawLine(vertices[root], vertices[rootLeft], Color.black);
-			Debug.DrawLine(vertices[rootLeft], vertices[rootUpleft], Color.black);
-			Debug.DrawLine(vertices[rootUpleft], vertices[root], Color.black);
-			Debug.DrawLine(vertices[root], vertices[rootUpleft], Color.red);
-			Debug.DrawLine(vertices[rootUpleft], vertices[rootUp], Color.red);
-			Debug.DrawLine(vertices[rootUp], vertices[root], Color.red);
+			Debug.DrawLine(vertices[root], vertices[rootUpleft], Color.black);
+			Debug.DrawLine(vertices[rootUpleft], vertices[rootLeft], Color.black);
+			Debug.DrawLine(vertices[rootLeft], vertices[root], Color.black);
+			Debug.DrawLine(vertices[root], vertices[rootUp], Color.red);
+			Debug.DrawLine(vertices[rootUp], vertices[rootUpleft], Color.red);
+			Debug.DrawLine(vertices[rootUpleft], vertices[root], Color.red);
 
 			triangles.Add(root);
+			triangles.Add(rootUpleft);
 			triangles.Add(rootLeft);
-			triangles.Add(rootUpleft);
 			triangles.Add(root);
-			triangles.Add(rootUpleft);
 			triangles.Add(rootUp);
+			triangles.Add(rootUpleft);
 		}
 
 		int start = amountOfVertsAroundCircumference - 1 + layerAddition;
 		int startLeft = layerAddition;
 		int startLeftUp = start + 1;
 		int startup = start + amountOfVertsAroundCircumference;
-		Debug.DrawLine(vertices[start], vertices[startLeft], Color.green);
-		Debug.DrawLine(vertices[startLeft], vertices[startLeftUp], Color.green);
-		Debug.DrawLine(vertices[startLeftUp], vertices[start], Color.green);
+		Debug.DrawLine(vertices[start], vertices[startLeftUp], Color.green);
+		Debug.DrawLine(vertices[startLeftUp], vertices[startLeft], Color.green);
+		Debug.DrawLine(vertices[startLeft], vertices[start], Color.green);
 
-		Debug.DrawLine(vertices[start], vertices[startLeftUp], Color.blue);
-		Debug.DrawLine(vertices[startLeftUp], vertices[startup], Color.blue);
-		Debug.DrawLine(vertices[startup], vertices[start], Color.blue);
+		Debug.DrawLine(vertices[start], vertices[startup], Color.blue);
+		Debug.DrawLine(vertices[startup], vertices[startLeftUp], Color.blue);
+		Debug.DrawLine(vertices[startLeftUp], vertices[start], Color.blue);
 
 		triangles.Add(start);
+		triangles.Add(startLeftUp);
 		triangles.Add(startLeft);
-		triangles.Add(startLeftUp);
 		triangles.Add(start);
-		triangles.Add(startLeftUp);
 		triangles.Add(startup);
+		triangles.Add(startLeftUp);
 	}
 
 
