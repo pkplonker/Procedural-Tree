@@ -250,10 +250,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7b880d88c896e7c41a8df3f05772d0b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  radius: 1
-  sliceHeight: 1
-  numberOfSlices: 2
+  radius: 0.5
+  sliceHeight: 0.2
+  numberOfSlices: 5
   amountOfVertsAroundCircumference: 6
+  vertTestStart: 0
+  vertTestEnd: 0
 --- !u!4 &1075212034
 Transform:
   m_ObjectHideFlags: 0
@@ -394,8 +396,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1687258581}
-  m_LocalRotation: {x: -0.07996773, y: 0.70257044, z: -0.079967745, w: -0.70257044}
-  m_LocalPosition: {x: 2.256, y: 1.472, z: -0.651}
+  m_LocalRotation: {x: -0.2557053, y: 0.26049414, z: -0.07176128, w: -0.9282284}
+  m_LocalPosition: {x: 0.9158205, y: 1.1106118, z: -1.0912185}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
