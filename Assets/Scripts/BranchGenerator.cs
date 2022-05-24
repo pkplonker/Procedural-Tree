@@ -4,17 +4,18 @@ using UnityEngine;
 
 public class BranchGenerator
 {
-	private List<Vector3> vertices = new List<Vector3>();
+	public List<Vector3> vertices { get; private set; }=  new List<Vector3>();
 	private List<int> triangles = new List<int>();
-	private bool debugEnabled = false;
-	public Mesh GenerateBranchMesh(Mesh treeMesh,float radius,float sliceHeight,int numberOfSlices,int amountOfVertsAroundCircumference, Vector3 startPos, bool debugEnabled = false)
+	public bool debugEnabled = false;
+	private TreeDataSO d;
+	public Mesh GenerateBranchMesh(Mesh treeMesh,TreeDataSO treeDataSO)
 	{
-		this.debugEnabled = debugEnabled;
+		d = treeDataSO;
 		vertices = new List<Vector3>();
 		triangles = new List<int>();
-		vertices = GenerateVerts(numberOfSlices,amountOfVertsAroundCircumference,startPos,sliceHeight,radius);
+		vertices = GenerateVerts(d.numberOfSlices,d.amountOfVertsAroundCircumference,d.startPos,d.sliceHeight,d.radius,d.rotation,d.branchRadiusReductionCurve);
 
-		GenerateTriangles(numberOfSlices,amountOfVertsAroundCircumference);
+		GenerateTriangles(d.numberOfSlices,d.amountOfVertsAroundCircumference);
 
 
 		treeMesh.Clear();
@@ -25,15 +26,17 @@ public class BranchGenerator
 		return treeMesh;
 	}
 
-	private List<Vector3> GenerateVerts(int numberOfSlices, int amountOfVertsAroundCircumference, Vector3 startPos, float sliceHeight, float radius)
+	private List<Vector3> GenerateVerts(int numberOfSlices, int amountOfVertsAroundCircumference, Vector3 startPos, float sliceHeight, float radius,Vector3 rotation,AnimationCurve radiusDegCurve)
 	{
-
+		float currentRadius = radius;
 		List<Vector3> verts = new List<Vector3>();
 		for (int i = 0; i < numberOfSlices; i++)
 		{
+			currentRadius = radius * radiusDegCurve.Evaluate((float) i / (numberOfSlices - 1));
+			//currentRadius= Mathf.Lerp(radius, 0, (float)i/(numberOfSlices-1));
 			for (int y = 0; y < amountOfVertsAroundCircumference; y++)
 			{
-				verts.Add(CalculateVertPosition(i, y, verts, startPos,amountOfVertsAroundCircumference,sliceHeight,radius));
+				verts.Add(CalculateVertPosition(i, y, verts, startPos,amountOfVertsAroundCircumference,sliceHeight,currentRadius,rotation));
 			}
 		}
 
@@ -104,24 +107,18 @@ public class BranchGenerator
 
 
 	private Vector3 CalculateVertPosition(int layerIndex, int vertIndexAroundCircumference, List<Vector3> verts,
-		Vector3 centre, int amountOfVertsAroundCircumference, float sliceHeight, float radius)
+		Vector3 centre, int amountOfVertsAroundCircumference, float sliceHeight, float radius, Vector3 eulerRotation)
 	{
+		
+		Quaternion rotation = Quaternion.Euler(eulerRotation);
 		float percentageOfCircle = vertIndexAroundCircumference / (float) amountOfVertsAroundCircumference;
 		float angleRadians = percentageOfCircle * MathFunctions.TAU;
-		return new Vector3(
+		return  rotation *new Vector3(
 			Mathf.Cos(angleRadians) * radius,
 			centre.y + sliceHeight * layerIndex,
 			Mathf.Sin(angleRadians) * radius
-		);
+		)+ centre;
 	}
 
-	private void OnDrawGizmos()
-	{
-		if (!debugEnabled) return;
-		foreach (var v in vertices)
-		{
-			Gizmos.color = Color.red;
-			Gizmos.DrawSphere(v, 0.02f);
-		}
-	}
+	
 }
