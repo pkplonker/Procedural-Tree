@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,5 +13,15 @@ public class TreeDataSO : ScriptableObject
 	[Range(3, 32)] public int amountOfVertsAroundCircumference = 6;
 	public Vector3 startPos;
 	public Vector3 rotation;
-	public AnimationCurve branchRadiusReductionCurve;
+	public AnimationCurve branchRadiusReductionCurve = AnimationCurve.Linear(0,1,1,1);
+	public Material branchMaterial;
+
+
+	private void OnEnable()
+	{
+		if (branchMaterial == null)
+		{
+			branchMaterial =  Resources.Load("branchTest.mat", typeof(Material)) as Material;
+		}
+	}
 }

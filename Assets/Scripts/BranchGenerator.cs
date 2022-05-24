@@ -8,6 +8,7 @@ public class BranchGenerator
 	private List<int> triangles = new List<int>();
 	public bool debugEnabled = false;
 	private TreeDataSO d;
+	
 	public Mesh GenerateBranchMesh(Mesh treeMesh,TreeDataSO treeDataSO)
 	{
 		d = treeDataSO;
