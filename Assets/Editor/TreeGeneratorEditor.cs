@@ -22,5 +22,14 @@ public class TreeGeneratorEditor : Editor
 		EditorGUILayout.Space();
 		EditorGUILayout.Space();
 		DrawDefaultInspector();
+		EditorGUILayout.Space();
+		EditorGUILayout.Space();
+		if (GUILayout.Button("Save Mesh"))
+		{
+			t.SaveMesh();
+		}
+
+		EditorGUILayout.Space();
+		EditorGUILayout.Space();
 	}
 }

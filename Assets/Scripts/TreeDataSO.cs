@@ -29,7 +29,7 @@ public class TreeDataSO : ScriptableObject
 	{
 		if (branchMaterial == null)
 		{
-			branchMaterial = Resources.Load("branchTest.mat", typeof(Material)) as Material;
+			branchMaterial = Resources.Load("branchTest.mat") as Material;
 		}
 	}
 }

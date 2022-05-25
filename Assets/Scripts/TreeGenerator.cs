@@ -1,3 +1,5 @@
+using System;
+using UnityEditor;
 using UnityEngine;
 
 [RequireComponent(typeof(MeshRenderer))]
@@ -22,9 +24,16 @@ public class TreeGenerator : MonoBehaviour
 		trunkBranchGenerator = new BranchGenerator();
 	}
 
+
 	private void Update()
 	{
 		UpdateBranch();
+	}
+
+	public void SaveMesh()
+	{
+		AssetDatabase.CreateAsset(trunkMesh, "Assets/Resources/GeneratedTrees/treeMesh.asset");
+		AssetDatabase.SaveAssets();
 	}
 
 	public void UpdateBranch()
