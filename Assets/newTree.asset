@@ -13,61 +13,36 @@ MonoBehaviour:
   m_Name: newTree
   m_EditorClassIdentifier: 
   debugEnabled: 0
-  radius: 0.383
-  sliceHeight: 0.049
-  numberOfSlices: 100
-  amountOfVertsAroundCircumference: 15
+  radius: 0.75
+  sliceHeight: 0.2
+  numberOfSlices: 5
+  amountOfVertsAroundCircumference: 6
   startPos: {x: 0, y: 0, z: 0}
   rotation: {x: 0, y: 0, z: 0}
   branchRadiusReductionCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: -0.001033783
-      value: 1.192894
-      inSlope: -2.7028751
-      outSlope: -2.7028751
-      tangentMode: 34
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
       weightedMode: 0
       inWeight: 0
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 0.081670016
-      value: 0.96935594
-      inSlope: -0.26933903
-      outSlope: -0.26933903
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.12707348
-    - serializedVersion: 3
-      time: 0.35978365
-      value: 0.7894753
-      inSlope: -0.33004507
-      outSlope: -0.33004507
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.118145354
-      outWeight: 0.08774878
-    - serializedVersion: 3
-      time: 0.8451901
-      value: 0.22763622
-      inSlope: -2.263331
-      outSlope: -2.263331
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.16350673
-      outWeight: 0.33333334
+      outWeight: 0
     - serializedVersion: 3
       time: 1
-      value: 0
-      inSlope: -1.4704243
-      outSlope: -1.4704243
-      tangentMode: 34
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
       weightedMode: 0
-      inWeight: 0.33333334
+      inWeight: 0
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  branchMaterial: {fileID: 2100000, guid: 625ade8b9ea7d0d4d82c61201415e6f8, type: 2}
+  branchMaterial: {fileID: 0}
+  randomise: 0
+  randomFactor: 20

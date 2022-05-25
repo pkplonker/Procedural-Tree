@@ -4,19 +4,19 @@ using UnityEngine;
 
 public class BranchGenerator
 {
-	public List<Vector3> vertices { get; private set; }=  new List<Vector3>();
+	public List<Vector3> vertices { get; private set; } = new List<Vector3>();
 	private List<int> triangles = new List<int>();
 	public bool debugEnabled = false;
 	private TreeDataSO d;
-	
-	public Mesh GenerateBranchMesh(Mesh treeMesh,TreeDataSO treeDataSO)
+
+	public Mesh GenerateBranchMesh(Mesh treeMesh, TreeDataSO treeDataSO)
 	{
 		d = treeDataSO;
 		vertices = new List<Vector3>();
 		triangles = new List<int>();
-		vertices = GenerateVerts(d.numberOfSlices,d.amountOfVertsAroundCircumference,d.startPos,d.sliceHeight,d.radius,d.rotation,d.branchRadiusReductionCurve);
+		vertices = GenerateVerts(d);
 
-		GenerateTriangles(d.numberOfSlices,d.amountOfVertsAroundCircumference);
+		GenerateTriangles(d.numberOfSlices, d.amountOfVertsAroundCircumference);
 
 
 		treeMesh.Clear();
@@ -27,29 +27,36 @@ public class BranchGenerator
 		return treeMesh;
 	}
 
-	private List<Vector3> GenerateVerts(int numberOfSlices, int amountOfVertsAroundCircumference, Vector3 startPos, float sliceHeight, float radius,Vector3 rotation,AnimationCurve radiusDegCurve)
+	private List<Vector3> GenerateVerts(TreeDataSO d)
 	{
-		float currentRadius = radius;
+		float currentRadius = d.radius;
 		List<Vector3> verts = new List<Vector3>();
-		for (int i = 0; i < numberOfSlices; i++)
+		bool canRandomise = true;
+		for (int i = 0; i < d.numberOfSlices; i++)
 		{
-			currentRadius = radius * radiusDegCurve.Evaluate((float) i / (numberOfSlices - 1));
-			//currentRadius= Mathf.Lerp(radius, 0, (float)i/(numberOfSlices-1));
-			for (int y = 0; y < amountOfVertsAroundCircumference; y++)
+			
+			currentRadius = d.radius * d.branchRadiusReductionCurve.Evaluate((float) i / (d.numberOfSlices - 1));
+			Vector3 randomLayerRot= Vector3.zero;
+			if (i == d.numberOfSlices - 1)
 			{
-				verts.Add(CalculateVertPosition(i, y, verts, startPos,amountOfVertsAroundCircumference,sliceHeight,currentRadius,rotation));
+				canRandomise = false;
+			}
+			
+			for (int y = 0; y < d.amountOfVertsAroundCircumference; y++)
+			{
+				verts.Add(CalculateVertPosition(i, y, verts, currentRadius, d,canRandomise));
 			}
 		}
 
-		return verts;	}
-	
+		return verts;
+	}
 
 
 	private List<int> GenerateTriangles(int numberOfSlices, int amountOfVertsAroundCircumference)
 	{
 		for (int i = 0; i < numberOfSlices - 1; i++)
 		{
-			GenerateLayerTriangles(i,amountOfVertsAroundCircumference);
+			GenerateLayerTriangles(i, amountOfVertsAroundCircumference);
 		}
 
 		return triangles;
@@ -108,18 +115,18 @@ public class BranchGenerator
 
 
 	private Vector3 CalculateVertPosition(int layerIndex, int vertIndexAroundCircumference, List<Vector3> verts,
-		Vector3 centre, int amountOfVertsAroundCircumference, float sliceHeight, float radius, Vector3 eulerRotation)
+		float radius, TreeDataSO d, bool canRandomise
+	)
 	{
-		
-		Quaternion rotation = Quaternion.Euler(eulerRotation);
-		float percentageOfCircle = vertIndexAroundCircumference / (float) amountOfVertsAroundCircumference;
-		float angleRadians = percentageOfCircle * MathFunctions.TAU;
-		return  rotation *new Vector3(
-			Mathf.Cos(angleRadians) * radius,
-			centre.y + sliceHeight * layerIndex,
-			Mathf.Sin(angleRadians) * radius
-		)+ centre;
+		Quaternion rotation = Quaternion.Euler(d.rotation);
+		float angleRadians = (vertIndexAroundCircumference / (float) d.amountOfVertsAroundCircumference) *
+		                     MathFunctions.TAU;
+		float maxAmountOfRandom = d.sliceHeight / d.randomFactor;
+		float randomness = canRandomise && d.randomise ? Random.Range(-maxAmountOfRandom, maxAmountOfRandom) : 0;
+		return rotation * new Vector3(
+			Mathf.Cos(angleRadians) * radius + randomness,
+			d.startPos.y + d.sliceHeight * layerIndex,
+			Mathf.Sin(angleRadians) * radius + randomness
+		) + d.startPos;
 	}
-
-	
 }
