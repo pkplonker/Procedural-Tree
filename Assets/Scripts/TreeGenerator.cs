@@ -27,10 +27,9 @@ public class TreeGenerator : MonoBehaviour
 		UpdateBranch();
 	}
 
-	private void UpdateBranch()
+	public void UpdateBranch()
 	{
 		trunkBranchGenerator ??= new BranchGenerator();
-
 		trunkMesh = trunkBranchGenerator.GenerateBranchMesh(trunkMesh, treeDataSO);
 		meshRenderer.sharedMaterial = treeDataSO.branchMaterial;
 		trunkBranchGenerator.debugEnabled = treeDataSO.debugEnabled;

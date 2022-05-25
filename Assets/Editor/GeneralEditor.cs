@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-public class GeneralEditor : MonoBehaviour
+public class GeneralEditor : Editor
 {
 	[MenuItem("Stuart - ProcTree/GenerateTree")]
 	public static void GenerateTree()
@@ -21,6 +21,10 @@ public class GeneralEditor : MonoBehaviour
 		Selection.activeObject = so;
 
 	}
-
+	[CanEditMultipleObjects]
+	[CustomEditor(typeof(MonoBehaviour), true)]
+	public class MonoBehaviourEditor : Editor
+	{
+	}
 
 }

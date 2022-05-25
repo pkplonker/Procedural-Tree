@@ -36,7 +36,6 @@ public class BranchGenerator
 		{
 			
 			currentRadius = d.radius * d.branchRadiusReductionCurve.Evaluate((float) i / (d.numberOfSlices - 1));
-			Vector3 randomLayerRot= Vector3.zero;
 			if (i == d.numberOfSlices - 1)
 			{
 				canRandomise = false;

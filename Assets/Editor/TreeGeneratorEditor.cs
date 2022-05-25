@@ -5,30 +5,22 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
-[CustomEditor(typeof(TreeDataSO))]
+[CustomEditor(typeof(TreeGenerator))]
 public class TreeGeneratorEditor : Editor
 {
 	public override void OnInspectorGUI()
 	{
-		DrawDefaultInspector(); // for other non-HideInInspector fields
+		TreeGenerator t = (TreeGenerator) target;
 
-		TreeDataSO t = (TreeDataSO) target;
 		EditorGUILayout.Space();
-		LineBreak();
 		EditorGUILayout.Space();
-		// draw checkbox for the bool
-		t.randomise = EditorGUILayout.Toggle("Randomise?", t.randomise);
-		if (t.randomise) // if bool is true, show other fields
+		if (GUILayout.Button("Force Regenerate Mesh"))
 		{
-			t.randomFactor =
-				EditorGUILayout.Slider("Random Factor",t.randomFactor,t.MIN_RANDOM_FACTOR,t.MAX_RANDOM_FACTOR);
+			t.UpdateBranch();
 		}
-	}
 
-	private void LineBreak(int height = 1)
-	{
-		Rect rect = EditorGUILayout.GetControlRect(false, height);
-		rect.height = height;
-		EditorGUI.DrawRect(rect, new Color(0.5f, 0.5f, 0.5f, 1));
+		EditorGUILayout.Space();
+		EditorGUILayout.Space();
+		DrawDefaultInspector();
 	}
 }
