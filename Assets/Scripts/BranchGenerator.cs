@@ -20,7 +20,6 @@ public class BranchGenerator
 
 
 		treeMesh.Clear();
-
 		treeMesh.SetVertices(vertices);
 		treeMesh.SetTriangles(triangles, 0);
 		treeMesh.RecalculateNormals();
@@ -32,18 +31,29 @@ public class BranchGenerator
 		float currentRadius = d.radius;
 		List<Vector3> verts = new List<Vector3>();
 		bool canRandomise = true;
+		Vector3 layerPositionOffset = Vector3.zero;
+		float xShift;
+		float yShift;
 		for (int i = 0; i < d.numberOfSlices; i++)
 		{
-			
 			currentRadius = d.radius * d.branchRadiusReductionCurve.Evaluate((float) i / (d.numberOfSlices - 1));
 			if (i == d.numberOfSlices - 1)
 			{
 				canRandomise = false;
 			}
-			
+
+			if (d.randomise && i != 0)
+			{
+				float t = (float) i / d.numberOfSlices;
+				xShift = d.randomFactor* d.xPositionShiftCurve.Evaluate(t)/1000f;
+				yShift = d.randomFactor* d.yPositionShiftCurve.Evaluate(t)/1000f;
+
+				layerPositionOffset += new Vector3(xShift, 0, yShift);
+			}
+
 			for (int y = 0; y < d.amountOfVertsAroundCircumference; y++)
 			{
-				verts.Add(CalculateVertPosition(i, y, verts, currentRadius, d,canRandomise));
+				verts.Add(CalculateVertPosition(i, y, currentRadius, d, canRandomise, layerPositionOffset));
 			}
 		}
 
@@ -51,14 +61,12 @@ public class BranchGenerator
 	}
 
 
-	private List<int> GenerateTriangles(int numberOfSlices, int amountOfVertsAroundCircumference)
+	private void GenerateTriangles(int numberOfSlices, int amountOfVertsAroundCircumference)
 	{
 		for (int i = 0; i < numberOfSlices - 1; i++)
 		{
 			GenerateLayerTriangles(i, amountOfVertsAroundCircumference);
 		}
-
-		return triangles;
 	}
 
 	private void GenerateLayerTriangles(int layer, int amountOfVertsAroundCircumference)
@@ -113,19 +121,26 @@ public class BranchGenerator
 	}
 
 
-	private Vector3 CalculateVertPosition(int layerIndex, int vertIndexAroundCircumference, List<Vector3> verts,
-		float radius, TreeDataSO d, bool canRandomise
+	private Vector3 CalculateVertPosition(int layerIndex, int vertIndexAroundCircumference, float radius, TreeDataSO d,
+		bool canRandomise, Vector3 layerPositionOffset
 	)
 	{
 		Quaternion rotation = Quaternion.Euler(d.rotation);
 		float angleRadians = (vertIndexAroundCircumference / (float) d.amountOfVertsAroundCircumference) *
 		                     MathFunctions.TAU;
-		float maxAmountOfRandom = d.sliceHeight / d.randomFactor;
-		float randomness = canRandomise && d.randomise ? Random.Range(-maxAmountOfRandom, maxAmountOfRandom) : 0;
+		float maxAmountOfRandom = Mathf.Min(d.sliceHeight, radius) / d.randomFactor;
+		float randomness = 0;
+
+		if (canRandomise && d.randomise)
+		{
+			randomness = Random.Range(-maxAmountOfRandom, maxAmountOfRandom);
+		}
+
+
 		return rotation * new Vector3(
 			Mathf.Cos(angleRadians) * radius + randomness,
-			d.startPos.y + d.sliceHeight * layerIndex,
-			Mathf.Sin(angleRadians) * radius + randomness
-		) + d.startPos;
+			d.startPos.y + d.sliceHeight * layerIndex + randomness,
+			Mathf.Sin(angleRadians) * radius
+		) + d.startPos + layerPositionOffset;
 	}
 }

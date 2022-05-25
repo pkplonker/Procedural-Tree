@@ -17,6 +17,9 @@ public class TreeDataSO : ScriptableObject
 	public Vector3 startPos;
 	public Vector3 rotation;
 	public AnimationCurve branchRadiusReductionCurve = AnimationCurve.Linear(0, 1, 1, 1);
+	public AnimationCurve xPositionShiftCurve = AnimationCurve.Linear(0, 1, 1, 1);
+	public AnimationCurve yPositionShiftCurve = AnimationCurve.Linear(0, 1, 1, 1);
+
 	public Material branchMaterial;
 	[HideInInspector] public bool randomise;
 	[HideInInspector] public float randomFactor=20f;
