@@ -9,7 +9,7 @@ public class BranchGeneratorLSystem : MonoBehaviour
 	private List<int> triangles = new List<int>();
 	private bool debugEnabled = false;
 
-	public Mesh GenerateBranchMesh(float radius,
+	public Mesh GenerateBranchMesh(float baseRadius, float tipRadius,
 		float sliceThickness, int amountOfVertsAroundCircumference, int numberOfSlices, bool debugEnabled,
 		Quaternion rotation)
 	{
@@ -19,7 +19,8 @@ public class BranchGeneratorLSystem : MonoBehaviour
 		triangles = new List<int>();
 
 
-		vertices = GenerateVerts(radius, numberOfSlices, amountOfVertsAroundCircumference, sliceThickness,
+		vertices = GenerateVerts(baseRadius, tipRadius, numberOfSlices, amountOfVertsAroundCircumference,
+			sliceThickness,
 			transform.position, rotation);
 
 		GenerateTriangles(numberOfSlices, amountOfVertsAroundCircumference);
@@ -34,7 +35,8 @@ public class BranchGeneratorLSystem : MonoBehaviour
 		return mesh;
 	}
 
-	private List<Vector3> GenerateVerts(float radius, int numberOfSlices, int amountOfVertsAroundCircumference,
+	private List<Vector3> GenerateVerts(float baseRadius, float tipRadius, int numberOfSlices,
+		int amountOfVertsAroundCircumference,
 		float sliceThickness, Vector3 startPos, Quaternion rotation)
 	{
 		List<Vector3> verts = new List<Vector3>();
@@ -42,8 +44,8 @@ public class BranchGeneratorLSystem : MonoBehaviour
 		{
 			for (int y = 0; y < amountOfVertsAroundCircumference; y++)
 			{
-				verts.Add(CalculateVertPosition(i, y, radius,
-					rotation, amountOfVertsAroundCircumference, startPos,
+				verts.Add(CalculateVertPosition(i, y, baseRadius, tipRadius,
+					rotation, amountOfVertsAroundCircumference,
 					sliceThickness, numberOfSlices));
 			}
 		}
@@ -112,33 +114,39 @@ public class BranchGeneratorLSystem : MonoBehaviour
 	}
 
 
-	private Vector3 CalculateVertPosition(int layerIndex, int vertIndexAroundCircumference, float radius,
+	private Vector3 CalculateVertPosition(int layerIndex, int vertIndexAroundCircumference, float baseRadius,
+		float tipRadius,
 		Quaternion rotation, int amountOfVertsAroundCircumference,
-		Vector3 startPos, float sliceHeight, int numberOfSlices
+		float sliceHeight, int numberOfSlices
 	)
 	{
 		//debug
-		startPos = Vector3.zero;
+		float radius = baseRadius;
 		float angleRadians = vertIndexAroundCircumference / (float) amountOfVertsAroundCircumference *
 		                     MathFunctions.TAU;
-		float randomness = 0;
 		if (layerIndex == 0)
 		{
 			radius = 0;
+			layerIndex = 1;
 		}
 		else if (layerIndex == 1)
 		{
-			radius = radius * 0.33f;
+			layerIndex = 1;
 		}
-		else if (layerIndex == numberOfSlices-1)
+		else if (layerIndex == numberOfSlices - 1)
 		{
 			radius = 0;
+			layerIndex = numberOfSlices - 1;
+		}
+		else
+		{
+			radius = (((tipRadius - baseRadius) / numberOfSlices) * layerIndex) + baseRadius;
 		}
 
 		return rotation * new Vector3(
 			Mathf.Cos(angleRadians) * radius,
-			startPos.y + sliceHeight * layerIndex,
+			sliceHeight * (layerIndex - 1),
 			Mathf.Sin(angleRadians) * radius
-		) + startPos;
+		);
 	}
 }

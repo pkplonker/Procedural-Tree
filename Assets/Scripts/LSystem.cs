@@ -18,6 +18,7 @@ public class LSystem : MonoBehaviour
 	[Range(0.01f, .5f)] [SerializeField] private float sliceThickness = .1f;
 	[Range(2, 100)] [SerializeField] int numberOfSlices = 10;
 	[Range(1, 100)] [SerializeField] int quality = 10;
+	[SerializeField] float radiusReductionFactor = 5f;
 
 	[SerializeField] private GameObject branchPrefab;
 	private const string axiom = "X";
@@ -28,7 +29,7 @@ public class LSystem : MonoBehaviour
 
 	private void Start()
 	{
-		branchLength = (numberOfSlices-4) * sliceThickness;
+		branchLength = (numberOfSlices - 2) * sliceThickness;
 		transformStack = new Stack<TransformInfo>();
 		rules = new Dictionary<char, string>
 		{
@@ -61,15 +62,19 @@ public class LSystem : MonoBehaviour
 			currentString = sb.ToString();
 		}
 
-
+		float baseRadius = radius;
+		float tipRadius = radius;
 		foreach (var c in currentString)
 		{
 			switch (c)
 			{
 				case 'F':
 					if (Random.value < 0.7f) break;
-					
+
 					//straight line
+					baseRadius = tipRadius;
+					tipRadius = baseRadius - ((baseRadius / 100) * (radiusReductionFactor));
+
 					Vector3 initialPosition = transform.position;
 					transform.Translate(Vector3.up * branchLength);
 					Debug.DrawLine(initialPosition, transform.position, Color.red);
@@ -77,7 +82,7 @@ public class LSystem : MonoBehaviour
 					var branch = segment.GetComponent<BranchGeneratorLSystem>();
 					segment.transform.position = initialPosition;
 
-					meshes.Add(branch.GenerateBranchMesh(radius,
+					meshes.Add(branch.GenerateBranchMesh(baseRadius, tipRadius,
 						sliceThickness, 3 + quality, numberOfSlices, true, transform.rotation));
 
 					break;
@@ -106,14 +111,16 @@ public class LSystem : MonoBehaviour
 
 					break;
 
-				
+
 				case '[': //save
-					transformStack.Push(new TransformInfo(transform));
+					transformStack.Push(new TransformInfo(transform, baseRadius, tipRadius));
 					break;
 				case ']': //return
 					TransformInfo ti = transformStack.Pop();
 					transform.position = ti.position;
 					transform.rotation = ti.rotation;
+					baseRadius = ti.baseRadius;
+					tipRadius = ti.tipRadius;
 					break;
 				default:
 					Debug.LogError("Error in string");
@@ -128,10 +135,14 @@ public class TransformInfo
 {
 	public Vector3 position;
 	public Quaternion rotation;
+	public float baseRadius;
+	public float tipRadius;
 
-	public TransformInfo(Transform t)
+	public TransformInfo(Transform t, float baseRadius, float tipRadius)
 	{
 		position = t.position;
 		rotation = t.rotation;
+		this.tipRadius = tipRadius;
+		this.baseRadius = baseRadius;
 	}
 }
