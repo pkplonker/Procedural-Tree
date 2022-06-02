@@ -33,12 +33,13 @@ public class LSystem : MonoBehaviour
 		transformStack = new Stack<TransformInfo>();
 		rules = new Dictionary<char, string>
 		{
-			{'X', "F&[[X]^X]^F[^FX]&X"},
+			//{'X', "F&[[X]^X]^F[^FX]&X"},
 			//{'X', "F/-[[X]+/X]+F[+?FX]-X?F/-[[X]+X]+F[+?FX]+"},
 			//{'X', "F"},
 
 			//{'F', "FF+[+F-F-F]-[-F+F+F]"},
 			//{'X', "[F-[+X]F[-X]+X]"},
+			//{'X', "[FF][FF][FF]X"},
 			//{'F', "F[+F]F[-F][F]"},
 			//{'X', "F[+F]F[-F][F]"},
 			//{'X', "F[+F]F[-F][F]"},
@@ -51,16 +52,15 @@ public class LSystem : MonoBehaviour
 		//{'S', "FL"},
 		//{'L',"[∧∧{-f+f+f--f+f+f}]"}
 		//{'L', "[∧∧]"}
-
 		Generate();
 		Debug.Log("Test");
-		//meshes.Add(GenerateMesh());
+		CreateObjectWithMesh();
 	}
 
 
 	private void Generate()
 	{
-		currentString = "FFF[FFFFFF[FFFFF]]FF";
+		currentString = "[F[FF]F]"; //test string
 		/*currentString = axiom;
 		for (int i = 0; i < iterations; i++)
 		{
@@ -76,6 +76,8 @@ public class LSystem : MonoBehaviour
 		}*/
 
 		targetTransform = new GameObject("target").transform;
+		targetTransform.parent = transform;
+		GenerateVerts();
 
 		for (int i = 0; i < currentString.Length; i++)
 		{
@@ -87,7 +89,6 @@ public class LSystem : MonoBehaviour
 					targetTransform.Translate(Vector3.up * branchLength);
 					GenerateSection();
 					radius = radius - ((radius / 100) * (radiusReductionFactor));
-
 					break;
 				case 'f':
 					if (Random.value < 0.7f) break;
@@ -110,7 +111,7 @@ public class LSystem : MonoBehaviour
 					targetTransform.Rotate(Vector3.left * rotationAngleMax);
 					break;
 				case '^':
-					targetTransform.Rotate(Vector3.right * rotationAngleMax);
+					targetTransform.Rotate(Vector3.left * -rotationAngleMax);
 					break;
 				case '/':
 					targetTransform.Rotate(Vector3.up * rotationAngleMax);
@@ -118,37 +119,45 @@ public class LSystem : MonoBehaviour
 				case '?':
 					targetTransform.Rotate(Vector3.down * rotationAngleMax);
 					break;
-
-
 				case '[': //save
-				
-					transformStack.Push(new TransformInfo(transform, radius, vertices, triangles,numberOfSlicesGenerated));
-					numberOfSlicesGenerated = 0;
-					vertices = new List<Vector3>();
-					triangles = new List<int>();
+					CreateObjectWithMesh();
+
+					transformStack.Push(new TransformInfo(transform, radius));
 					break;
 				case ']': //return
+					CreateObjectWithMesh();
+
 					TransformInfo ti = transformStack.Pop();
 					transform.position = ti.position;
 					transform.rotation = ti.rotation;
-					numberOfSlicesGenerated = ti.numberOfSlicesgenerated;
 					radius = ti.radius;
-					GameObject obj = new GameObject();
-					obj.transform.parent = transform;
-					var mr = obj.AddComponent<MeshRenderer>();
-					var mf = obj.AddComponent<MeshFilter>();
-					mf.mesh = GenerateMesh();
-					mr.sharedMaterial = GetComponent<MeshRenderer>().sharedMaterial;
-					vertices = new List<Vector3>(ti.vertices);
-					triangles = new List<int>(triangles);
-
-
 					break;
 				default:
 					Debug.LogError("Error in string" + currentString[i]);
 					break;
 			}
 		}
+	}
+
+	private void CreateObjectWithMesh()
+	{
+		if (vertices.Count <quality)
+		{
+			Debug.Log("!");
+			return;
+		}
+
+		GameObject ob = new GameObject
+		{
+			transform =
+			{
+				parent = transform
+			}
+		};
+		var mrr = ob.AddComponent<MeshRenderer>();
+		var mff = ob.AddComponent<MeshFilter>();
+		mff.mesh = GenerateMesh();
+		mrr.sharedMaterial = GetComponent<MeshRenderer>().sharedMaterial;
 	}
 
 	private Mesh GenerateMesh()
@@ -161,6 +170,9 @@ public class LSystem : MonoBehaviour
 		mesh.SetVertices(vertices);
 		mesh.SetTriangles(triangles, 0);
 		mesh.RecalculateNormals();
+		List<Vector3> cachedVerts = new List<Vector3>(vertices.GetRange(vertices.Count - quality, quality));
+		vertices = new List<Vector3>(cachedVerts);
+		triangles.Clear();
 		return mesh;
 	}
 
@@ -171,7 +183,6 @@ public class LSystem : MonoBehaviour
 	}
 
 	private void GenerateVerts()
-
 	{
 		numberOfSlicesGenerated++;
 		for (int y = 0; y < quality; y++)
@@ -201,7 +212,7 @@ public class LSystem : MonoBehaviour
 
 	private void GenerateTriangles()
 	{
-		for (int i = 0; i < numberOfSlicesGenerated - 1; i++)
+		for (int i = 0; i < (vertices.Count/quality)-1; i++)
 		{
 			GenerateLayerTriangles(i);
 		}
@@ -244,18 +255,14 @@ public class LSystem : MonoBehaviour
 		public Vector3 position;
 		public Quaternion rotation;
 		public float radius;
-		public List<Vector3> vertices;
-		public List<int> triangles;
-		public int numberOfSlicesgenerated;
-		public TransformInfo(Transform t, float radius, List<Vector3> vertices, List<int> triangles, int numberOfSlicesgenerated)
+
+
+		public TransformInfo(Transform t, float radius)
 
 		{
 			position = t.position;
 			rotation = t.rotation;
 			this.radius = radius;
-			this.triangles = new List<int>(triangles);
-			this.vertices = new List<Vector3>(vertices);
-			this.numberOfSlicesgenerated = numberOfSlicesgenerated;
 		}
 	}
 }
