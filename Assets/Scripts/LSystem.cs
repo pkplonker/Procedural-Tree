@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Unity.Mathematics;
+using UnityEditor;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -24,6 +25,7 @@ public class LSystem : MonoBehaviour
 	private List<int> triangles = new List<int>();
 	private Transform targetTransform;
 	private int numberOfSlicesGenerated;
+	private List<Mesh> meshes = new List<Mesh>();
 
 	private void Start()
 	{
@@ -51,13 +53,15 @@ public class LSystem : MonoBehaviour
 		//{'L', "[∧∧]"}
 
 		Generate();
-		GenerateFinalMesh();
+		Debug.Log("Test");
+		//meshes.Add(GenerateMesh());
 	}
 
 
 	private void Generate()
 	{
-		currentString = axiom;
+		currentString = "FFF[FFFFFF[FFFFF]]FF";
+		/*currentString = axiom;
 		for (int i = 0; i < iterations; i++)
 		{
 			StringBuilder sb = new StringBuilder();
@@ -69,12 +73,10 @@ public class LSystem : MonoBehaviour
 
 
 			currentString = sb.ToString();
-		}
+		}*/
 
 		targetTransform = new GameObject("target").transform;
-		//generate start
-		GenerateSection();
-		GenerateSection();
+
 		for (int i = 0; i < currentString.Length; i++)
 		{
 			switch (currentString[i])
@@ -119,13 +121,28 @@ public class LSystem : MonoBehaviour
 
 
 				case '[': //save
-					transformStack.Push(new TransformInfo(transform, radius));
+				
+					transformStack.Push(new TransformInfo(transform, radius, vertices, triangles,numberOfSlicesGenerated));
+					numberOfSlicesGenerated = 0;
+					vertices = new List<Vector3>();
+					triangles = new List<int>();
 					break;
 				case ']': //return
 					TransformInfo ti = transformStack.Pop();
 					transform.position = ti.position;
 					transform.rotation = ti.rotation;
+					numberOfSlicesGenerated = ti.numberOfSlicesgenerated;
 					radius = ti.radius;
+					GameObject obj = new GameObject();
+					obj.transform.parent = transform;
+					var mr = obj.AddComponent<MeshRenderer>();
+					var mf = obj.AddComponent<MeshFilter>();
+					mf.mesh = GenerateMesh();
+					mr.sharedMaterial = GetComponent<MeshRenderer>().sharedMaterial;
+					vertices = new List<Vector3>(ti.vertices);
+					triangles = new List<int>(triangles);
+
+
 					break;
 				default:
 					Debug.LogError("Error in string" + currentString[i]);
@@ -134,7 +151,7 @@ public class LSystem : MonoBehaviour
 		}
 	}
 
-	private void GenerateFinalMesh()
+	private Mesh GenerateMesh()
 	{
 		Mesh mesh = new Mesh
 		{
@@ -144,16 +161,12 @@ public class LSystem : MonoBehaviour
 		mesh.SetVertices(vertices);
 		mesh.SetTriangles(triangles, 0);
 		mesh.RecalculateNormals();
-		MeshFilter mf = GetComponent<MeshFilter>();
-		mf.mesh = mesh;
-		transform.position = Vector3.zero;
-		transform.rotation = quaternion.identity;
+		return mesh;
 	}
 
 	private void GenerateSection()
 	{
 		GenerateVerts();
-
 		GenerateTriangles();
 	}
 
@@ -167,18 +180,23 @@ public class LSystem : MonoBehaviour
 		}
 	}
 
-	private Vector3 CalculateVertPosition(int vertIndexAroundCircumference
-	)
+	private Vector3 CalculateVertPosition(int vertIndexAroundCircumference)
 	{
 		float angleRadians = vertIndexAroundCircumference / (float) quality *
 		                     MathFunctions.TAU;
 
-
-		return targetTransform.rotation * new Vector3(
+		Vector3 pos = targetTransform.rotation * new Vector3(
 			Mathf.Cos(angleRadians) * radius,
 			targetTransform.position.y,
 			Mathf.Sin(angleRadians) * radius
 		);
+		GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+		sphere.transform.position = pos;
+		sphere.transform.localScale = Vector3.one * 0.02f;
+		sphere.GetComponent<MeshRenderer>().sharedMaterial.color = Color.red;
+
+
+		return pos;
 	}
 
 	private void GenerateTriangles()
@@ -226,12 +244,18 @@ public class LSystem : MonoBehaviour
 		public Vector3 position;
 		public Quaternion rotation;
 		public float radius;
+		public List<Vector3> vertices;
+		public List<int> triangles;
+		public int numberOfSlicesgenerated;
+		public TransformInfo(Transform t, float radius, List<Vector3> vertices, List<int> triangles, int numberOfSlicesgenerated)
 
-		public TransformInfo(Transform t, float radius)
 		{
 			position = t.position;
 			rotation = t.rotation;
 			this.radius = radius;
+			this.triangles = new List<int>(triangles);
+			this.vertices = new List<Vector3>(vertices);
+			this.numberOfSlicesgenerated = numberOfSlicesgenerated;
 		}
 	}
 }

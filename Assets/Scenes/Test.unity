@@ -305,7 +305,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!64 &597408693
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -650,8 +650,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1687258581}
-  m_LocalRotation: {x: -0.2557053, y: 0.26049414, z: -0.07176128, w: -0.9282284}
-  m_LocalPosition: {x: 0.9158205, y: 1.1106118, z: -1.0912185}
+  m_LocalRotation: {x: 0.1881904, y: -0.5154581, z: 0.12042028, w: 0.82727647}
+  m_LocalPosition: {x: 6.6154437, y: 4.0176344, z: -2.0196214}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -721,11 +721,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rotationAngleMax: 22.5
-  iterations: 3
-  radius: 1
-  sliceThickness: 0.5
-  quality: 20
-  radiusReductionFactor: 10
+  iterations: 5
+  radius: 0.2
+  sliceThickness: 0.1
+  quality: 6
+  radiusReductionFactor: 3
   vertices: []
 --- !u!4 &2063336225
 Transform:
