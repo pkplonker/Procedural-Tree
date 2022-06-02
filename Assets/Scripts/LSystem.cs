@@ -8,25 +8,35 @@ using Random = UnityEngine.Random;
 
 public class LSystem : MonoBehaviour
 {
-	[SerializeField] private float lineLength = 10f;
 	[SerializeField] private float rotationAngleMin = 0f;
 	[SerializeField] private float rotationAngleMax = 30f;
 	[SerializeField] private float upRotationAngleMin = -50f;
 	[SerializeField] private float upRotationAngleMax = 50f;
 	[SerializeField] private int iterations = 5;
+	[Range(0.01f, 1f)] [SerializeField] private float radius = 0.1f;
+	float branchLength;
+	[Range(0.01f, .5f)] [SerializeField] private float sliceThickness = .1f;
+	[Range(2, 100)] [SerializeField] int numberOfSlices = 10;
+	[Range(1, 100)] [SerializeField] int quality = 10;
 
 	[SerializeField] private GameObject branchPrefab;
 	private const string axiom = "X";
 	private Stack<TransformInfo> transformStack;
 	private Dictionary<char, string> rules;
 	private string currentString = "";
+	private List<Mesh> meshes = new List<Mesh>();
 
 	private void Start()
 	{
+		branchLength = (numberOfSlices-1) * sliceThickness;
 		transformStack = new Stack<TransformInfo>();
 		rules = new Dictionary<char, string>
 		{
 			{'X', "[F-[[X]+X]+F[+FX]-X]"},
+			//{'X', "[F-[+X]F[-X]+X]"},
+			//{'F', "F[+F]F[-F][F]"},
+
+
 			{'F', "FF"}
 		};
 		Generate();
@@ -46,19 +56,26 @@ public class LSystem : MonoBehaviour
 
 
 			currentString = sb.ToString();
+			Debug.Log("Iteration " + i + ". String = " + currentString);
 		}
+
 
 		foreach (var c in currentString)
 		{
 			switch (c)
 			{
 				case 'F': //straight line
-					Vector3 initialPosition = transform.position;
-					transform.Translate(Vector3.up * lineLength);
+					Transform initialTransform = transform;
+					transform.Translate(Vector3.up * branchLength);
+					Quaternion rot = transform.rotation;
+					Debug.DrawLine(initialTransform.position, transform.position, Color.red);
 					GameObject segment = Instantiate(branchPrefab);
-					var lr = segment.GetComponent<LineRenderer>();
-					lr.SetPosition(0, initialPosition);
-					lr.SetPosition(1, transform.position);
+					var branch = segment.GetComponent<BranchGeneratorLSystem>();
+					segment.transform.position = initialTransform.position;
+					segment.transform.rotation = initialTransform.rotation;
+
+					meshes.Add(branch.GenerateBranchMesh(radius,
+						sliceThickness, 3 + quality, numberOfSlices, true, rot));
 
 					break;
 				case 'X': //nothing

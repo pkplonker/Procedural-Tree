@@ -12,6 +12,7 @@ public class TreeGenerator : MonoBehaviour
 	private MeshRenderer meshRenderer;
 	private Mesh trunkMesh;
 	public void SetTreeData(TreeDataSO td) => treeDataSO = td;
+	private LSystem lSystem;
 
 	private void Awake()
 	{
@@ -22,6 +23,7 @@ public class TreeGenerator : MonoBehaviour
 		GetComponent<MeshFilter>().sharedMesh = trunkMesh;
 		meshRenderer = GetComponent<MeshRenderer>();
 		trunkBranchGenerator = new BranchGenerator();
+		lSystem = GetComponent<LSystem>();
 	}
 
 
