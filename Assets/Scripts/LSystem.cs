@@ -35,6 +35,9 @@ public class LSystem : MonoBehaviour
 			{'X', "[F-[[X]+X]+F[+FX]-X]"},
 			//{'X', "[F-[+X]F[-X]+X]"},
 			//{'F', "F[+F]F[-F][F]"},
+			//{'X', "F[+F]F[-F][F]"},
+			//{'X', "F[+F]F[-F][F]"},
+			//{'F', "F[+F]F[-F][F]"},
 
 
 			{'F', "FF"}
@@ -63,7 +66,10 @@ public class LSystem : MonoBehaviour
 		{
 			switch (c)
 			{
-				case 'F': //straight line
+				case 'F':
+					if (Random.value < 0.7f) break;
+					
+					//straight line
 					Vector3 initialPosition = transform.position;
 					transform.Translate(Vector3.up * branchLength);
 					Debug.DrawLine(initialPosition, transform.position, Color.red);
@@ -81,16 +87,26 @@ public class LSystem : MonoBehaviour
 					transform.Rotate(Vector3.back * Random.Range(rotationAngleMin, rotationAngleMax));
 					transform.Rotate(Vector3.left * Random.Range(rotationAngleMin, rotationAngleMax));
 
-					transform.Rotate(Vector3.up * Random.Range(upRotationAngleMin, upRotationAngleMax));
 
 					break;
 				case '-': //rotate anti-clockwise
 					transform.Rotate(Vector3.forward * Random.Range(rotationAngleMin, rotationAngleMax));
 					transform.Rotate(Vector3.right * Random.Range(rotationAngleMin, rotationAngleMax));
 
+
+					break;
+				case '/': //rotate anti-clockwise
+
 					transform.Rotate(Vector3.up * Random.Range(upRotationAngleMin, upRotationAngleMax));
 
 					break;
+				case '?': //rotate anti-clockwise
+					transform.Rotate(Vector3.down * Random.Range(rotationAngleMin, rotationAngleMax));
+
+
+					break;
+
+				
 				case '[': //save
 					transformStack.Push(new TransformInfo(transform));
 					break;

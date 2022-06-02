@@ -305,7 +305,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!64 &597408693
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -377,7 +377,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 597408692}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0.053, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -720,15 +720,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91da3c4b82b36a4468a9272657db5386, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rotationAngleMin: -22.5
-  rotationAngleMax: 22.5
+  rotationAngleMin: -40
+  rotationAngleMax: 40
   upRotationAngleMin: -180
   upRotationAngleMax: 180
   iterations: 5
   radius: 0.01
   sliceThickness: 0.01
-  numberOfSlices: 15
-  quality: 20
+  numberOfSlices: 10
+  quality: 15
   branchPrefab: {fileID: 1077206320958404541, guid: 6518e218c42588f439aa0c5cf3da4ba7, type: 3}
 --- !u!4 &2063336225
 Transform:
