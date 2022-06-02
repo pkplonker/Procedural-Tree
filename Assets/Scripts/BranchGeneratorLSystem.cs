@@ -20,8 +20,7 @@ public class BranchGeneratorLSystem : MonoBehaviour
 
 
 		vertices = GenerateVerts(baseRadius, tipRadius, numberOfSlices, amountOfVertsAroundCircumference,
-			sliceThickness,
-			transform.position, rotation);
+			sliceThickness, rotation);
 
 		GenerateTriangles(numberOfSlices, amountOfVertsAroundCircumference);
 
@@ -37,7 +36,8 @@ public class BranchGeneratorLSystem : MonoBehaviour
 
 	private List<Vector3> GenerateVerts(float baseRadius, float tipRadius, int numberOfSlices,
 		int amountOfVertsAroundCircumference,
-		float sliceThickness, Vector3 startPos, Quaternion rotation)
+		float sliceThickness,
+		Quaternion rotation)
 	{
 		List<Vector3> verts = new List<Vector3>();
 		for (int i = 0; i < numberOfSlices; i++)
@@ -127,25 +127,43 @@ public class BranchGeneratorLSystem : MonoBehaviour
 		if (layerIndex == 0)
 		{
 			radius = 0;
-			layerIndex = 1;
-		}
-		else if (layerIndex == 1)
-		{
-			layerIndex = 1;
-		}
-		else if (layerIndex == numberOfSlices - 1)
-		{
-			radius = 0;
-			layerIndex = numberOfSlices - 1;
-		}
-		else
-		{
-			radius = (((tipRadius - baseRadius) / numberOfSlices) * layerIndex) + baseRadius;
+			return rotation * new Vector3(
+				Mathf.Cos(angleRadians) * 0,
+				0,
+				Mathf.Sin(angleRadians) * 0);
 		}
 
+		if (layerIndex == 1)
+		{
+			return rotation * new Vector3(
+				Mathf.Cos(angleRadians) * baseRadius,
+				0,
+				Mathf.Sin(angleRadians) * baseRadius);
+		}
+
+		if (layerIndex == 2)
+		{
+			return rotation * new Vector3(
+				Mathf.Cos(angleRadians) * tipRadius,
+				(sliceHeight),
+				Mathf.Sin(angleRadians) * tipRadius);
+		}
+
+		if (layerIndex == 3)
+		{
+			return rotation * new Vector3(
+				Mathf.Cos(angleRadians) * tipRadius,
+				sliceHeight,
+				Mathf.Sin(angleRadians) * tipRadius);
+		}
+
+		radius = baseRadius - ((baseRadius - tipRadius) / (numberOfSlices + 1));
+
+
+		Debug.Log("Radius = " + radius + ". Base radius = " + baseRadius + ". Tip radius = " + tipRadius);
 		return rotation * new Vector3(
 			Mathf.Cos(angleRadians) * radius,
-			sliceHeight * (layerIndex - 1),
+			(sliceHeight * layerIndex) - sliceHeight,
 			Mathf.Sin(angleRadians) * radius
 		);
 	}

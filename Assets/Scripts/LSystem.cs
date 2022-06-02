@@ -16,7 +16,7 @@ public class LSystem : MonoBehaviour
 	[Range(0.01f, 1f)] [SerializeField] private float radius = 0.1f;
 	float branchLength;
 	[Range(0.01f, .5f)] [SerializeField] private float sliceThickness = .1f;
-	[Range(2, 100)] [SerializeField] int numberOfSlices = 10;
+	int numberOfSlices = 4;
 	[Range(1, 100)] [SerializeField] int quality = 10;
 	[SerializeField] float radiusReductionFactor = 5f;
 
@@ -29,19 +29,32 @@ public class LSystem : MonoBehaviour
 
 	private void Start()
 	{
-		branchLength = (numberOfSlices - 2) * sliceThickness;
+		branchLength = sliceThickness - (branchLength / 10);
 		transformStack = new Stack<TransformInfo>();
 		rules = new Dictionary<char, string>
 		{
-			{'X', "[F-[[X]+X]+F[+FX]-X]"},
+//			{'X', "F&[[X]^X]^F[^FX]&X"},
+			{'X', "F/-[[X]+/X]+F[+?FX]-X?F/-[[X]+X]+F[+?FX]+"},
+
+			//{'F', "FF+[+F-F-F]-[-F+F+F]"},
 			//{'X', "[F-[+X]F[-X]+X]"},
 			//{'F', "F[+F]F[-F][F]"},
 			//{'X', "F[+F]F[-F][F]"},
 			//{'X', "F[+F]F[-F][F]"},
 			//{'F', "F[+F]F[-F][F]"},
-
-
+			//{'X', "F"},
 			{'F', "FF"}
+			//{'A', "[&FLA]/////[&FL!A]///////[&FLA]"},
+			//{'F', "S ///// F"},
+			//{'S', "FL"},
+			//{'L',"[∧∧{-f+f+f--f+f+f}]"}
+			//{'L', "[∧∧]"}
+			/*
+			case '&':transform.Rotate(Vector3.left * Random.Range(0, rotationAngleMax));
+			case '^':transform.Rotate(Vector3.right * Random.Range(0, rotationAngleMax));
+			case '/':transform.Rotate(Vector3.up * Random.Range(0, rotationAngleMax));
+			case '?':transform.Rotate(Vector3.down * Random.Range(0, rotationAngleMax));
+			*/
 		};
 		Generate();
 	}
@@ -64,9 +77,12 @@ public class LSystem : MonoBehaviour
 
 		float baseRadius = radius;
 		float tipRadius = radius;
-		foreach (var c in currentString)
+		for (int i = 0; i < currentString.Length; i++)
 		{
-			switch (c)
+			Vector3 initialPosition;
+			GameObject segment;
+			BranchGeneratorLSystem branch;
+			switch (currentString[i])
 			{
 				case 'F':
 					if (Random.value < 0.7f) break;
@@ -75,40 +91,44 @@ public class LSystem : MonoBehaviour
 					baseRadius = tipRadius;
 					tipRadius = baseRadius - ((baseRadius / 100) * (radiusReductionFactor));
 
-					Vector3 initialPosition = transform.position;
+					initialPosition = transform.position;
 					transform.Translate(Vector3.up * branchLength);
-					Debug.DrawLine(initialPosition, transform.position, Color.red);
-					GameObject segment = Instantiate(branchPrefab);
-					var branch = segment.GetComponent<BranchGeneratorLSystem>();
+					segment = Instantiate(branchPrefab);
+					branch = segment.GetComponent<BranchGeneratorLSystem>();
 					segment.transform.position = initialPosition;
 
-					meshes.Add(branch.GenerateBranchMesh(baseRadius, tipRadius,
+					meshes.Add(branch.GenerateBranchMesh(baseRadius, currentString[i] == ']' ? 0 : tipRadius,
 						sliceThickness, 3 + quality, numberOfSlices, true, transform.rotation));
+
+					break;
+				case 'f':
+					if (Random.value < 0.7f) break;
+					transform.Translate(Vector3.up * branchLength);
 
 					break;
 				case 'X': //nothing
 					break;
-				case '+': //rotate +
-					transform.Rotate(Vector3.back * Random.Range(rotationAngleMin, rotationAngleMax));
-					transform.Rotate(Vector3.left * Random.Range(rotationAngleMin, rotationAngleMax));
-
-
+				case 'S': //nothing
 					break;
-				case '-': //rotate anti-clockwise
-					transform.Rotate(Vector3.forward * Random.Range(rotationAngleMin, rotationAngleMax));
-					transform.Rotate(Vector3.right * Random.Range(rotationAngleMin, rotationAngleMax));
-
-
+				case 'L': //nothing
 					break;
-				case '/': //rotate anti-clockwise
-
-					transform.Rotate(Vector3.up * Random.Range(upRotationAngleMin, upRotationAngleMax));
-
+				case '+':
+					transform.Rotate(Vector3.back * rotationAngleMax);
 					break;
-				case '?': //rotate anti-clockwise
-					transform.Rotate(Vector3.down * Random.Range(rotationAngleMin, rotationAngleMax));
-
-
+				case '-':
+					transform.Rotate(Vector3.forward *  rotationAngleMax);
+					break;
+				case '&':
+					transform.Rotate(Vector3.left *  rotationAngleMax);
+					break;
+				case '^':
+					transform.Rotate(Vector3.right *  rotationAngleMax);
+					break;
+				case '/':
+					transform.Rotate(Vector3.up * rotationAngleMax);
+					break;
+				case '?':
+					transform.Rotate(Vector3.down *  rotationAngleMax);
 					break;
 
 
@@ -123,7 +143,7 @@ public class LSystem : MonoBehaviour
 					tipRadius = ti.tipRadius;
 					break;
 				default:
-					Debug.LogError("Error in string");
+					Debug.LogError("Error in string" + currentString[i]);
 					break;
 			}
 		}

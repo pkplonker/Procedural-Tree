@@ -720,15 +720,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91da3c4b82b36a4468a9272657db5386, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rotationAngleMin: -22.5
+  rotationAngleMin: 0
   rotationAngleMax: 22.5
-  upRotationAngleMin: -45
-  upRotationAngleMax: -45
-  iterations: 4
-  radius: 0.25
-  sliceThickness: 0.05
-  numberOfSlices: 14
-  quality: 15
+  upRotationAngleMin: 0
+  upRotationAngleMax: 22.5
+  iterations: 3
+  radius: 0.292
+  sliceThickness: 0.5
+  quality: 30
   radiusReductionFactor: 20
   branchPrefab: {fileID: 1077206320958404541, guid: 6518e218c42588f439aa0c5cf3da4ba7, type: 3}
 --- !u!4 &2063336225
