@@ -28,7 +28,7 @@ public class LSystem : MonoBehaviour
 
 	private void Start()
 	{
-		branchLength = (numberOfSlices-1) * sliceThickness;
+		branchLength = (numberOfSlices-4) * sliceThickness;
 		transformStack = new Stack<TransformInfo>();
 		rules = new Dictionary<char, string>
 		{
@@ -56,7 +56,6 @@ public class LSystem : MonoBehaviour
 
 
 			currentString = sb.ToString();
-			Debug.Log("Iteration " + i + ". String = " + currentString);
 		}
 
 
@@ -65,28 +64,30 @@ public class LSystem : MonoBehaviour
 			switch (c)
 			{
 				case 'F': //straight line
-					Transform initialTransform = transform;
+					Vector3 initialPosition = transform.position;
 					transform.Translate(Vector3.up * branchLength);
-					Quaternion rot = transform.rotation;
-					Debug.DrawLine(initialTransform.position, transform.position, Color.red);
+					Debug.DrawLine(initialPosition, transform.position, Color.red);
 					GameObject segment = Instantiate(branchPrefab);
 					var branch = segment.GetComponent<BranchGeneratorLSystem>();
-					segment.transform.position = initialTransform.position;
-					segment.transform.rotation = initialTransform.rotation;
+					segment.transform.position = initialPosition;
 
 					meshes.Add(branch.GenerateBranchMesh(radius,
-						sliceThickness, 3 + quality, numberOfSlices, true, rot));
+						sliceThickness, 3 + quality, numberOfSlices, true, transform.rotation));
 
 					break;
 				case 'X': //nothing
 					break;
 				case '+': //rotate +
 					transform.Rotate(Vector3.back * Random.Range(rotationAngleMin, rotationAngleMax));
+					transform.Rotate(Vector3.left * Random.Range(rotationAngleMin, rotationAngleMax));
+
 					transform.Rotate(Vector3.up * Random.Range(upRotationAngleMin, upRotationAngleMax));
 
 					break;
 				case '-': //rotate anti-clockwise
 					transform.Rotate(Vector3.forward * Random.Range(rotationAngleMin, rotationAngleMax));
+					transform.Rotate(Vector3.right * Random.Range(rotationAngleMin, rotationAngleMax));
+
 					transform.Rotate(Vector3.up * Random.Range(upRotationAngleMin, upRotationAngleMax));
 
 					break;

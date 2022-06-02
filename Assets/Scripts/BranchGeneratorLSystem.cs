@@ -10,14 +10,15 @@ public class BranchGeneratorLSystem : MonoBehaviour
 	private bool debugEnabled = false;
 
 	public Mesh GenerateBranchMesh(float radius,
-		float sliceThickness, int amountOfVertsAroundCircumference, int numberOfSlices, bool debugEnabled,Quaternion rotation)
+		float sliceThickness, int amountOfVertsAroundCircumference, int numberOfSlices, bool debugEnabled,
+		Quaternion rotation)
 	{
 		this.debugEnabled = debugEnabled;
 		Mesh mesh = new Mesh();
 		vertices = new List<Vector3>();
 		triangles = new List<int>();
 
-		
+
 		vertices = GenerateVerts(radius, numberOfSlices, amountOfVertsAroundCircumference, sliceThickness,
 			transform.position, rotation);
 
@@ -43,7 +44,7 @@ public class BranchGeneratorLSystem : MonoBehaviour
 			{
 				verts.Add(CalculateVertPosition(i, y, radius,
 					rotation, amountOfVertsAroundCircumference, startPos,
-					sliceThickness));
+					sliceThickness, numberOfSlices));
 			}
 		}
 
@@ -113,7 +114,7 @@ public class BranchGeneratorLSystem : MonoBehaviour
 
 	private Vector3 CalculateVertPosition(int layerIndex, int vertIndexAroundCircumference, float radius,
 		Quaternion rotation, int amountOfVertsAroundCircumference,
-		Vector3 startPos, float sliceHeight
+		Vector3 startPos, float sliceHeight, int numberOfSlices
 	)
 	{
 		//debug
@@ -121,6 +122,18 @@ public class BranchGeneratorLSystem : MonoBehaviour
 		float angleRadians = vertIndexAroundCircumference / (float) amountOfVertsAroundCircumference *
 		                     MathFunctions.TAU;
 		float randomness = 0;
+		if (layerIndex == 0)
+		{
+			radius = 0;
+		}
+		else if (layerIndex == 1)
+		{
+			radius = radius * 0.33f;
+		}
+		else if (layerIndex == numberOfSlices-1)
+		{
+			radius = 0;
+		}
 
 		return rotation * new Vector3(
 			Mathf.Cos(angleRadians) * radius,
