@@ -26,6 +26,7 @@ public class LSystem : MonoBehaviour
 	private Transform targetTransform;
 	private int numberOfSlicesGenerated;
 	private List<Mesh> meshes = new List<Mesh>();
+	[SerializeField] private bool debugEnabled;
 
 	private void Start()
 	{
@@ -62,7 +63,7 @@ public class LSystem : MonoBehaviour
 		currentString =
 			"FF[--FF[[[&FFF]FFF]^FFF]][FFFF/////FFFFF][++FF[[[&FFF]FFF]^FFF]]";
 		//test string
-		/*currentString = axiom;
+		currentString = axiom;
 		for (int i = 0; i < iterations; i++)
 		{
 			StringBuilder sb = new StringBuilder();
@@ -74,30 +75,48 @@ public class LSystem : MonoBehaviour
 
 
 			currentString = sb.ToString();
-		}*/
+		}
 
 		Debug.Log(currentString);
 
 		targetTransform = new GameObject("target").transform;
 
-		GenerateVerts(false);
+
 		for (int i = 0; i < currentString.Length; i++)
 		{
 			switch (currentString[i])
 			{
 				case 'F':
+
 					//straight line
+					GenerateVerts(false);
 					targetTransform.position += (targetTransform.up * branchLength);
-					//targetTransform.Translate(Vector3.up * branchLength);
+					GenerateSection(true);
+					CreateObjectWithMesh();
+					break;
+				case 'f':
+
+
+					break;
+				case 'X': //nothing
+					break;
+				case 'S': //nothing
+					break;
+				case 'L': //nothing
 					break;
 				case '+':
+					GenerateVerts(false);
 					//targetTransform.Translate(Vector3.up * (branchLength/2));
 					targetTransform.Rotate(targetTransform.forward * (rotationAngleMax));
-					GenerateVerts(false);
+					GenerateSection(true);
+					CreateObjectWithMesh();
 					break;
 				case '-':
-					targetTransform.Rotate(targetTransform.forward * (-rotationAngleMax));
 					GenerateVerts(false);
+					//targetTransform.Translate(Vector3.up * (branchLength/2));
+					targetTransform.Rotate(targetTransform.forward * (-rotationAngleMax));
+					GenerateSection(true);
+					CreateObjectWithMesh();
 					break;
 				case '&':
 					GenerateVerts(false);
@@ -128,20 +147,16 @@ public class LSystem : MonoBehaviour
 					CreateObjectWithMesh();
 					break;
 				case '[': //save
-					GenerateVerts(false);
-					List<Vector3> cachedVerts = new List<Vector3>(vertices.GetRange(vertices.Count - quality, quality));
-					transformStack.Push(new TransformInfo(targetTransform, radius,cachedVerts ));
+					transformStack.Push(new TransformInfo(targetTransform, radius));
 					break;
 				case ']': //return
-					GenerateVerts(false);
-					CreateObjectWithMesh();
+					//	CreateObjectWithMesh();
 					TransformInfo ti = transformStack.Pop();
 					targetTransform.position = ti.position;
 					targetTransform.rotation = ti.rotation;
 					radius = ti.radius;
 					vertices.Clear();
 					triangles.Clear();
-					vertices = new List<Vector3>(ti.cachedVerts);
 					break;
 				default:
 					Debug.LogError("Error in string" + currentString[i]);
@@ -216,19 +231,23 @@ public class LSystem : MonoBehaviour
 			0,
 			Mathf.Sin(angleRadians) * radius
 		);
-		GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-		sphere.transform.position = pos;
-		sphere.transform.localScale = Vector3.one * 0.02f;
-		sphere.GetComponent<MeshRenderer>().sharedMaterial.color = Color.red;
-		GameObject s = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-		s.name = "centre";
-		s.transform.position = targetTransform.position;
-		s.transform.localScale = Vector3.one * 0.02f;
-		s.GetComponent<MeshRenderer>().material.color = Color.blue;
+		if (debugEnabled)
+		{
+			GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
 
+			sphere.transform.position = pos;
+			sphere.transform.localScale = Vector3.one * 0.02f;
+			sphere.GetComponent<MeshRenderer>().sharedMaterial.color = Color.red;
+			GameObject s = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+			s.name = "centre";
+			s.transform.position = targetTransform.position;
+			s.transform.localScale = Vector3.one * 0.02f;
+			s.GetComponent<MeshRenderer>().material.color = Color.blue;
+		}
 
 		return pos;
 	}
+
 
 	private void GenerateTriangles()
 	{
@@ -272,19 +291,17 @@ public class LSystem : MonoBehaviour
 
 	private class TransformInfo
 	{
-		public readonly Vector3 position;
-		public readonly Quaternion rotation;
-		public readonly float radius;
-		public readonly List<Vector3> cachedVerts;
+		public Vector3 position;
+		public Quaternion rotation;
+		public float radius;
 
 
-		public TransformInfo(Transform t, float radius, List<Vector3> cachedVerts)
+		public TransformInfo(Transform t, float radius)
 
 		{
 			position = t.position;
 			rotation = t.rotation;
 			this.radius = radius;
-			this.cachedVerts = cachedVerts;
 		}
 	}
 }
