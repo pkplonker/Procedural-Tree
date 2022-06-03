@@ -60,7 +60,7 @@ public class LSystem : MonoBehaviour
 
 	private void Generate()
 	{
-		currentString = "[F[FF]F]"; //test string
+		currentString = "[FF+F+FFF-F-FFFF]"; //test string
 		/*currentString = axiom;
 		for (int i = 0; i < iterations; i++)
 		{
@@ -76,23 +76,24 @@ public class LSystem : MonoBehaviour
 		}*/
 
 		targetTransform = new GameObject("target").transform;
-		targetTransform.parent = transform;
+		
 		GenerateVerts();
 
 		for (int i = 0; i < currentString.Length; i++)
 		{
+			Debug.Log(targetTransform.position);
+
 			switch (currentString[i])
 			{
 				case 'F':
 
 					//straight line
-					targetTransform.Translate(Vector3.up * branchLength);
+					targetTransform.Translate(targetTransform.up * branchLength);
 					GenerateSection();
 					radius = radius - ((radius / 100) * (radiusReductionFactor));
 					break;
 				case 'f':
-					if (Random.value < 0.7f) break;
-					transform.Translate(Vector3.up * branchLength);
+					
 
 					break;
 				case 'X': //nothing
@@ -102,10 +103,14 @@ public class LSystem : MonoBehaviour
 				case 'L': //nothing
 					break;
 				case '+':
-					targetTransform.Rotate(Vector3.back * rotationAngleMax);
+					GenerateSection();
+
+					targetTransform.Rotate(Vector3.forward * rotationAngleMax);
 					break;
 				case '-':
-					targetTransform.Rotate(Vector3.forward * rotationAngleMax);
+					GenerateSection();
+
+					targetTransform.Rotate(Vector3.forward * (rotationAngleMax*-1));
 					break;
 				case '&':
 					targetTransform.Rotate(Vector3.left * rotationAngleMax);
@@ -122,14 +127,14 @@ public class LSystem : MonoBehaviour
 				case '[': //save
 					CreateObjectWithMesh();
 
-					transformStack.Push(new TransformInfo(transform, radius));
+					transformStack.Push(new TransformInfo(targetTransform, radius));
 					break;
 				case ']': //return
 					CreateObjectWithMesh();
 
 					TransformInfo ti = transformStack.Pop();
-					transform.position = ti.position;
-					transform.rotation = ti.rotation;
+					targetTransform.position = ti.position;
+					targetTransform.rotation = ti.rotation;
 					radius = ti.radius;
 					break;
 				default:
