@@ -141,7 +141,7 @@ public class LSystem : MonoBehaviour
 
 	private void CreateObjectWithMesh()
 	{
-		if (vertices.Count <quality)
+		if (vertices.Count <=quality)
 		{
 			Debug.Log("!");
 			return;
