@@ -36,7 +36,7 @@ public class LSystem : MonoBehaviour
 			//{'X', "F&[[X]^X]^F[^FX]&X"},
 			//{'X', "F/-[[X]+/X]+F[+?FX]-X?F/-[[X]+X]+F[+?FX]+"},
 			//{'X', "F"},
-			{'F', "FF+[+F−F−F]−[−F+F+F]"},
+			{'F', "FF+[+F-F-F]-[-F+F+F]"},
 			//{'F', "FF+[+F-F-F]-[-F+F+F]"},
 			//{'X', "[F-[+X]F[-X]+X]"},
 			//{'X', "[FF][FF][FF]X"},
@@ -59,7 +59,9 @@ public class LSystem : MonoBehaviour
 
 	private void Generate()
 	{
-		currentString = "FFF[+FFF]-FFF"; //test string
+		currentString =
+			"FF[--FF[[[&FFF]FFF]^FFF]][FFFFFFFFF][++FF[[[&FFF]FFF]^FFF]]";
+		//test string
 		/*currentString = axiom;
 		for (int i = 0; i < iterations; i++)
 		{
@@ -73,6 +75,8 @@ public class LSystem : MonoBehaviour
 
 			currentString = sb.ToString();
 		}*/
+
+		Debug.Log(currentString);
 
 		targetTransform = new GameObject("target").transform;
 
@@ -101,24 +105,31 @@ public class LSystem : MonoBehaviour
 					break;
 				case '+':
 					GenerateVerts(false);
-					targetTransform.Translate(Vector3.up * (branchLength));
+					targetTransform.Translate(Vector3.up * (branchLength/2));
 					targetTransform.Rotate(Vector3.forward * (rotationAngleMax));
 					GenerateSection(true);
 					CreateObjectWithMesh();
 					break;
 				case '-':
 					GenerateVerts(false);
-					targetTransform.Translate(Vector3.up * (branchLength));
+					targetTransform.Translate(Vector3.up * (branchLength/2));
 					targetTransform.Rotate(Vector3.forward * (-rotationAngleMax));
-
 					GenerateSection(true);
 					CreateObjectWithMesh();
 					break;
 				case '&':
-					targetTransform.Rotate(Vector3.left * rotationAngleMax);
+					GenerateVerts(false);
+					targetTransform.Translate(Vector3.up * (branchLength/2));
+					targetTransform.Rotate(Vector3.left * (rotationAngleMax));
+					GenerateSection(true);
+					CreateObjectWithMesh();
 					break;
 				case '^':
-					targetTransform.Rotate(Vector3.left * -rotationAngleMax);
+					GenerateVerts(false);
+					targetTransform.Translate(Vector3.up * (branchLength/2));
+					targetTransform.Rotate(Vector3.left * (-rotationAngleMax));
+					GenerateSection(true);
+					CreateObjectWithMesh();
 					break;
 				case '/':
 					targetTransform.Rotate(Vector3.up * rotationAngleMax);
@@ -130,11 +141,13 @@ public class LSystem : MonoBehaviour
 					transformStack.Push(new TransformInfo(targetTransform, radius));
 					break;
 				case ']': //return
-					CreateObjectWithMesh();
+					//	CreateObjectWithMesh();
 					TransformInfo ti = transformStack.Pop();
 					targetTransform.position = ti.position;
 					targetTransform.rotation = ti.rotation;
 					radius = ti.radius;
+					vertices.Clear();
+					triangles.Clear();
 					break;
 				default:
 					Debug.LogError("Error in string" + currentString[i]);
