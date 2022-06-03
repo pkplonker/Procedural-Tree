@@ -34,18 +34,10 @@ public class LSystem : MonoBehaviour
 		transformStack = new Stack<TransformInfo>();
 		rules = new Dictionary<char, string>
 		{
-			{'X', "F-[[X]+X]+F[+FX]-X"},
-			//{'X', "F/-[[X]+/X]+F[+?FX]-X?F/-[[X]+X]+F[+?FX]+"},
-			//{'X', "F"},
-			//{'F', "FF+[+F-F-F]-[-F+F+F]"},
-			//{'F', "FF+[+F-F-F]-[-F+F+F]"},
-			//{'X', "[F-[+X]F[-X]+X]"},
-			//{'X', "[FF][FF][FF]X"},
-			//{'F', "F[+F]F[-F][F]"},
-			//{'X', "F[+F]F[-F][F]"},
-			//{'X', "F[+F]F[-F][F]"},
-			//{'F', "F[+F]F[-F][F]"},
-			//{'X', "F"},
+			//b - X - 22.5
+			//{'X', "F-[[X]+X]+F[+FX]-X"},
+			//{'F', "FF"}
+			{'X', "F^[[X]+X]&F[^FX]-X"},
 			{'F', "FF"}
 		};
 		//{'A', "[&FLA]/////[&FL!A]///////[&FLA]"},
@@ -104,47 +96,23 @@ public class LSystem : MonoBehaviour
 					break;
 				case 'L': //nothing
 					break;
-				case '+':
-					GenerateVerts(false);
-					//targetTransform.Translate(Vector3.up * (branchLength/2));
-					targetTransform.Rotate(targetTransform.forward * (rotationAngleMax));
-					GenerateSection(true);
-					CreateObjectWithMesh();
+				case '+'://rot z+
+					RotateLayer(targetTransform.forward, true);
+					break; 
+				case '-'://rot z-
+					RotateLayer(targetTransform.forward, false);
 					break;
-				case '-':
-					GenerateVerts(false);
-					//targetTransform.Translate(Vector3.up * (branchLength/2));
-					targetTransform.Rotate(targetTransform.forward * (-rotationAngleMax));
-					GenerateSection(true);
-					CreateObjectWithMesh();
+				case '&'://rot x+
+					RotateLayer(targetTransform.right, true);
 					break;
-				case '&':
-					GenerateVerts(false);
-					targetTransform.Translate(Vector3.up * (branchLength / 2));
-					targetTransform.Rotate(Vector3.left * (rotationAngleMax));
-					GenerateSection(true);
-					CreateObjectWithMesh();
+				case '^'://rot x-
+					RotateLayer(targetTransform.right, false);
 					break;
-				case '^':
-					GenerateVerts(false);
-					targetTransform.Translate(Vector3.up * (branchLength / 2));
-					targetTransform.Rotate(Vector3.left * (-rotationAngleMax));
-					GenerateSection(true);
-					CreateObjectWithMesh();
+				case '?'://twist +
+					RotateLayer(targetTransform.up, true);
 					break;
-				case '?':
-					GenerateVerts(false);
-					targetTransform.Translate(Vector3.up * (branchLength / 2));
-					targetTransform.Rotate(Vector3.up * (rotationAngleMax));
-					GenerateSection(true);
-					CreateObjectWithMesh();
-					break;
-				case '/':
-					GenerateVerts(false);
-					targetTransform.Translate(Vector3.up * (branchLength / 2));
-					targetTransform.Rotate(Vector3.up * (-rotationAngleMax));
-					GenerateSection(true);
-					CreateObjectWithMesh();
+				case '/': //twist -
+					RotateLayer(targetTransform.up, false);
 					break;
 				case '[': //save
 					transformStack.Push(new TransformInfo(targetTransform, radius));
@@ -155,6 +123,7 @@ public class LSystem : MonoBehaviour
 					targetTransform.position = ti.position;
 					targetTransform.rotation = ti.rotation;
 					radius = ti.radius;
+					GenerateVerts(false);
 					vertices.Clear();
 					triangles.Clear();
 					break;
@@ -163,6 +132,14 @@ public class LSystem : MonoBehaviour
 					break;
 			}
 		}
+	}
+
+	private void RotateLayer(Vector3 dir, bool positive)
+	{
+		GenerateVerts(false);
+		targetTransform.Rotate(dir *(positive?rotationAngleMax:-rotationAngleMax));
+		GenerateSection(false);
+		CreateObjectWithMesh();
 	}
 
 	private void CreateObjectWithMesh()
