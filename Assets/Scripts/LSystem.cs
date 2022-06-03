@@ -62,7 +62,7 @@ public class LSystem : MonoBehaviour
 		currentString =
 			"FF[--FF[[[&FFF]FFF]^FFF]][FFFF/////FFFFF][++FF[[[&FFF]FFF]^FFF]]";
 		//test string
-		currentString = axiom;
+		/*currentString = axiom;
 		for (int i = 0; i < iterations; i++)
 		{
 			StringBuilder sb = new StringBuilder();
@@ -74,88 +74,74 @@ public class LSystem : MonoBehaviour
 
 
 			currentString = sb.ToString();
-		}
+		}*/
 
 		Debug.Log(currentString);
 
 		targetTransform = new GameObject("target").transform;
 
-
+		GenerateVerts(false);
 		for (int i = 0; i < currentString.Length; i++)
 		{
 			switch (currentString[i])
 			{
 				case 'F':
-
 					//straight line
-					GenerateVerts(false);
-					targetTransform.Translate(Vector3.up * branchLength);
-					GenerateSection(true);
-					CreateObjectWithMesh();
-					break;
-				case 'f':
-
-
-					break;
-				case 'X': //nothing
-					break;
-				case 'S': //nothing
-					break;
-				case 'L': //nothing
+					targetTransform.position += (targetTransform.up * branchLength);
+					//targetTransform.Translate(Vector3.up * branchLength);
 					break;
 				case '+':
-					GenerateVerts(false);
 					//targetTransform.Translate(Vector3.up * (branchLength/2));
 					targetTransform.Rotate(targetTransform.forward * (rotationAngleMax));
-					GenerateSection(true);
-					CreateObjectWithMesh();
+					GenerateVerts(false);
 					break;
 				case '-':
-					GenerateVerts(false);
-					//targetTransform.Translate(Vector3.up * (branchLength/2));
 					targetTransform.Rotate(targetTransform.forward * (-rotationAngleMax));
-					GenerateSection(true);
-					CreateObjectWithMesh();
+					GenerateVerts(false);
 					break;
 				case '&':
 					GenerateVerts(false);
-					targetTransform.Translate(Vector3.up * (branchLength/2));
+					targetTransform.Translate(Vector3.up * (branchLength / 2));
 					targetTransform.Rotate(Vector3.left * (rotationAngleMax));
 					GenerateSection(true);
 					CreateObjectWithMesh();
 					break;
 				case '^':
 					GenerateVerts(false);
-					targetTransform.Translate(Vector3.up * (branchLength/2));
+					targetTransform.Translate(Vector3.up * (branchLength / 2));
 					targetTransform.Rotate(Vector3.left * (-rotationAngleMax));
 					GenerateSection(true);
 					CreateObjectWithMesh();
 					break;
 				case '?':
 					GenerateVerts(false);
-					targetTransform.Translate(Vector3.up * (branchLength/2));
+					targetTransform.Translate(Vector3.up * (branchLength / 2));
 					targetTransform.Rotate(Vector3.up * (rotationAngleMax));
 					GenerateSection(true);
 					CreateObjectWithMesh();
 					break;
 				case '/':
 					GenerateVerts(false);
-					targetTransform.Translate(Vector3.up * (branchLength/2));
+					targetTransform.Translate(Vector3.up * (branchLength / 2));
 					targetTransform.Rotate(Vector3.up * (-rotationAngleMax));
 					GenerateSection(true);
 					CreateObjectWithMesh();
 					break;
 				case '[': //save
-					transformStack.Push(new TransformInfo(targetTransform, radius));
+					GenerateVerts(false);
+					List<Vector3> cachedVerts = new List<Vector3>(vertices.GetRange(vertices.Count - quality, quality));
+					transformStack.Push(new TransformInfo(targetTransform, radius,cachedVerts ));
 					break;
 				case ']': //return
-					//	CreateObjectWithMesh();
+					GenerateVerts(false);
+					CreateObjectWithMesh();
 					TransformInfo ti = transformStack.Pop();
 					targetTransform.position = ti.position;
 					targetTransform.rotation = ti.rotation;
 					radius = ti.radius;
 					vertices.Clear();
 					triangles.Clear();
+					vertices = new List<Vector3>(ti.cachedVerts);
 					break;
 				default:
 					Debug.LogError("Error in string" + currentString[i]);
@@ -225,15 +211,20 @@ public class LSystem : MonoBehaviour
 		float angleRadians = vertIndexAroundCircumference / (float) quality *
 		                     MathFunctions.TAU;
 
-		Vector3 pos = targetTransform.rotation * new Vector3(
+		Vector3 pos = targetTransform.position + new Vector3(
 			Mathf.Cos(angleRadians) * radius,
-			targetTransform.position.y,
+			0,
 			Mathf.Sin(angleRadians) * radius
 		);
 		GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
 		sphere.transform.position = pos;
 		sphere.transform.localScale = Vector3.one * 0.02f;
 		sphere.GetComponent<MeshRenderer>().sharedMaterial.color = Color.red;
+		GameObject s = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+		s.name = "centre";
+		s.transform.position = targetTransform.position;
+		s.transform.localScale = Vector3.one * 0.02f;
+		s.GetComponent<MeshRenderer>().material.color = Color.blue;
 
 
 		return pos;
@@ -281,17 +272,19 @@ public class LSystem : MonoBehaviour
 
 	private class TransformInfo
 	{
-		public Vector3 position;
-		public Quaternion rotation;
-		public float radius;
+		public readonly Vector3 position;
+		public readonly Quaternion rotation;
+		public readonly float radius;
+		public readonly List<Vector3> cachedVerts;
 
 
-		public TransformInfo(Transform t, float radius)
+		public TransformInfo(Transform t, float radius, List<Vector3> cachedVerts)
 
 		{
 			position = t.position;
 			rotation = t.rotation;
 			this.radius = radius;
+			this.cachedVerts = cachedVerts;
 		}
 	}
 }
