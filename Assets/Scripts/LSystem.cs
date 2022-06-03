@@ -16,7 +16,7 @@ public class LSystem : MonoBehaviour
 	[Range(5, 100)] [SerializeField] int quality = 10;
 	[SerializeField] float radiusReductionFactor = 5f;
 
-	private const string axiom = "F";
+	private const string axiom = "X";
 	private Stack<TransformInfo> transformStack;
 	private Dictionary<char, string> rules;
 	private string currentString = "";
@@ -33,10 +33,10 @@ public class LSystem : MonoBehaviour
 		transformStack = new Stack<TransformInfo>();
 		rules = new Dictionary<char, string>
 		{
-			//{'X', "F&[[X]^X]^F[^FX]&X"},
+			{'X', "F-[[X]+X]+F[+FX]-X"},
 			//{'X', "F/-[[X]+/X]+F[+?FX]-X?F/-[[X]+X]+F[+?FX]+"},
 			//{'X', "F"},
-			{'F', "FF+[+F-F-F]-[-F+F+F]"},
+			//{'F', "FF+[+F-F-F]-[-F+F+F]"},
 			//{'F', "FF+[+F-F-F]-[-F+F+F]"},
 			//{'X', "[F-[+X]F[-X]+X]"},
 			//{'X', "[FF][FF][FF]X"},
@@ -45,7 +45,7 @@ public class LSystem : MonoBehaviour
 			//{'X', "F[+F]F[-F][F]"},
 			//{'F', "F[+F]F[-F][F]"},
 			//{'X', "F"},
-			//{'F', "FF"}
+			{'F', "FF"}
 		};
 		//{'A', "[&FLA]/////[&FL!A]///////[&FLA]"},
 		//{'F', "S ///// F"},
@@ -60,9 +60,9 @@ public class LSystem : MonoBehaviour
 	private void Generate()
 	{
 		currentString =
-			"FF[--FF[[[&FFF]FFF]^FFF]][FFFFFFFFF][++FF[[[&FFF]FFF]^FFF]]";
+			"FF[--FF[[[&FFF]FFF]^FFF]][FFFF/////FFFFF][++FF[[[&FFF]FFF]^FFF]]";
 		//test string
-		/*currentString = axiom;
+		currentString = axiom;
 		for (int i = 0; i < iterations; i++)
 		{
 			StringBuilder sb = new StringBuilder();
@@ -74,7 +74,7 @@ public class LSystem : MonoBehaviour
 
 
 			currentString = sb.ToString();
-		}*/
+		}
 
 		Debug.Log(currentString);
 
@@ -105,15 +105,15 @@ public class LSystem : MonoBehaviour
 					break;
 				case '+':
 					GenerateVerts(false);
-					targetTransform.Translate(Vector3.up * (branchLength/2));
-					targetTransform.Rotate(Vector3.forward * (rotationAngleMax));
+					//targetTransform.Translate(Vector3.up * (branchLength/2));
+					targetTransform.Rotate(targetTransform.forward * (rotationAngleMax));
 					GenerateSection(true);
 					CreateObjectWithMesh();
 					break;
 				case '-':
 					GenerateVerts(false);
-					targetTransform.Translate(Vector3.up * (branchLength/2));
-					targetTransform.Rotate(Vector3.forward * (-rotationAngleMax));
+					//targetTransform.Translate(Vector3.up * (branchLength/2));
+					targetTransform.Rotate(targetTransform.forward * (-rotationAngleMax));
 					GenerateSection(true);
 					CreateObjectWithMesh();
 					break;
@@ -131,11 +131,19 @@ public class LSystem : MonoBehaviour
 					GenerateSection(true);
 					CreateObjectWithMesh();
 					break;
-				case '/':
-					targetTransform.Rotate(Vector3.up * rotationAngleMax);
-					break;
 				case '?':
-					targetTransform.Rotate(Vector3.down * rotationAngleMax);
+					GenerateVerts(false);
+					targetTransform.Translate(Vector3.up * (branchLength/2));
+					targetTransform.Rotate(Vector3.up * (rotationAngleMax));
+					GenerateSection(true);
+					CreateObjectWithMesh();
+					break;
+				case '/':
+					GenerateVerts(false);
+					targetTransform.Translate(Vector3.up * (branchLength/2));
+					targetTransform.Rotate(Vector3.up * (-rotationAngleMax));
+					GenerateSection(true);
+					CreateObjectWithMesh();
 					break;
 				case '[': //save
 					transformStack.Push(new TransformInfo(targetTransform, radius));

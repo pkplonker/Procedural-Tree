@@ -720,7 +720,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91da3c4b82b36a4468a9272657db5386, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rotationAngleMax: 5
+  rotationAngleMax: 10
   iterations: 1
   radius: 0.2
   sliceThickness: 0.2
