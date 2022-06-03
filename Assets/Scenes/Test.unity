@@ -721,11 +721,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rotationAngleMax: 10
-  iterations: 5
+  iterations: 2
   radius: 0.2
   sliceThickness: 0.2
   quality: 12
-  radiusReductionFactor: 0
+  radiusReductionFactor: 10
   vertices: []
 --- !u!4 &2063336225
 Transform:

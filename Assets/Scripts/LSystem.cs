@@ -16,7 +16,7 @@ public class LSystem : MonoBehaviour
 	[Range(5, 100)] [SerializeField] int quality = 10;
 	[SerializeField] float radiusReductionFactor = 5f;
 
-	private const string axiom = "X";
+	private const string axiom = "F";
 	private Stack<TransformInfo> transformStack;
 	private Dictionary<char, string> rules;
 	private string currentString = "";
@@ -36,7 +36,7 @@ public class LSystem : MonoBehaviour
 			//{'X', "F&[[X]^X]^F[^FX]&X"},
 			//{'X', "F/-[[X]+/X]+F[+?FX]-X?F/-[[X]+X]+F[+?FX]+"},
 			//{'X', "F"},
-
+			{'F', "FF+[+F−F−F]−[−F+F+F]"},
 			//{'F', "FF+[+F-F-F]-[-F+F+F]"},
 			//{'X', "[F-[+X]F[-X]+X]"},
 			//{'X', "[FF][FF][FF]X"},
@@ -45,7 +45,7 @@ public class LSystem : MonoBehaviour
 			//{'X', "F[+F]F[-F][F]"},
 			//{'F', "F[+F]F[-F][F]"},
 			//{'X', "F"},
-			{'F', "FF"}
+			//{'F', "FF"}
 		};
 		//{'A', "[&FLA]/////[&FL!A]///////[&FLA]"},
 		//{'F', "S ///// F"},
@@ -53,14 +53,13 @@ public class LSystem : MonoBehaviour
 		//{'L',"[∧∧{-f+f+f--f+f+f}]"}
 		//{'L', "[∧∧]"}
 		Generate();
-		Debug.Log("Test");
 		CreateObjectWithMesh();
 	}
 
 
 	private void Generate()
 	{
-		currentString = "[FF+F+FFF-F-FFFF]"; //test string
+		currentString = "FFF[+FFF]-FFF"; //test string
 		/*currentString = axiom;
 		for (int i = 0; i < iterations; i++)
 		{
@@ -76,24 +75,22 @@ public class LSystem : MonoBehaviour
 		}*/
 
 		targetTransform = new GameObject("target").transform;
-		
-		GenerateVerts();
+
 
 		for (int i = 0; i < currentString.Length; i++)
 		{
-			Debug.Log(targetTransform.position);
-
 			switch (currentString[i])
 			{
 				case 'F':
 
 					//straight line
-					targetTransform.Translate(targetTransform.up * branchLength);
-					GenerateSection();
-					radius = radius - ((radius / 100) * (radiusReductionFactor));
+					GenerateVerts(false);
+					targetTransform.Translate(Vector3.up * branchLength);
+					GenerateSection(true);
+					CreateObjectWithMesh();
 					break;
 				case 'f':
-					
+
 
 					break;
 				case 'X': //nothing
@@ -103,14 +100,19 @@ public class LSystem : MonoBehaviour
 				case 'L': //nothing
 					break;
 				case '+':
-					GenerateSection();
-
-					targetTransform.Rotate(Vector3.forward * rotationAngleMax);
+					GenerateVerts(false);
+					targetTransform.Translate(Vector3.up * (branchLength));
+					targetTransform.Rotate(Vector3.forward * (rotationAngleMax));
+					GenerateSection(true);
+					CreateObjectWithMesh();
 					break;
 				case '-':
-					GenerateSection();
+					GenerateVerts(false);
+					targetTransform.Translate(Vector3.up * (branchLength));
+					targetTransform.Rotate(Vector3.forward * (-rotationAngleMax));
 
-					targetTransform.Rotate(Vector3.forward * (rotationAngleMax*-1));
+					GenerateSection(true);
+					CreateObjectWithMesh();
 					break;
 				case '&':
 					targetTransform.Rotate(Vector3.left * rotationAngleMax);
@@ -125,13 +127,10 @@ public class LSystem : MonoBehaviour
 					targetTransform.Rotate(Vector3.down * rotationAngleMax);
 					break;
 				case '[': //save
-					CreateObjectWithMesh();
-
 					transformStack.Push(new TransformInfo(targetTransform, radius));
 					break;
 				case ']': //return
 					CreateObjectWithMesh();
-
 					TransformInfo ti = transformStack.Pop();
 					targetTransform.position = ti.position;
 					targetTransform.rotation = ti.rotation;
@@ -146,7 +145,7 @@ public class LSystem : MonoBehaviour
 
 	private void CreateObjectWithMesh()
 	{
-		if (vertices.Count <=quality)
+		if (vertices.Count <= quality)
 		{
 			Debug.Log("!");
 			return;
@@ -175,20 +174,24 @@ public class LSystem : MonoBehaviour
 		mesh.SetVertices(vertices);
 		mesh.SetTriangles(triangles, 0);
 		mesh.RecalculateNormals();
-		List<Vector3> cachedVerts = new List<Vector3>(vertices.GetRange(vertices.Count - quality, quality));
-		vertices = new List<Vector3>(cachedVerts);
+		vertices.Clear();
 		triangles.Clear();
 		return mesh;
 	}
 
-	private void GenerateSection()
+	private void GenerateSection(bool reduceRad)
 	{
-		GenerateVerts();
+		GenerateVerts(reduceRad);
 		GenerateTriangles();
 	}
 
-	private void GenerateVerts()
+	private void GenerateVerts(bool reduceRad)
 	{
+		if (reduceRad)
+		{
+			radius = radius - ((radius / 100) * (radiusReductionFactor));
+		}
+
 		numberOfSlicesGenerated++;
 		for (int y = 0; y < quality; y++)
 		{
@@ -217,7 +220,7 @@ public class LSystem : MonoBehaviour
 
 	private void GenerateTriangles()
 	{
-		for (int i = 0; i < (vertices.Count/quality)-1; i++)
+		for (int i = 0; i < (vertices.Count / quality) - 1; i++)
 		{
 			GenerateLayerTriangles(i);
 		}
