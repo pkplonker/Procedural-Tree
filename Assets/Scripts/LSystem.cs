@@ -3,6 +3,7 @@ using System.Text;
 using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
 using Random = UnityEngine.Random;
 
 public class LSystem : MonoBehaviour
@@ -47,9 +48,37 @@ public class LSystem : MonoBehaviour
 		//{'L', "[∧∧]"}
 		Generate();
 		CreateObjectWithMesh();
+		CombineMeshes();
 	}
 
+	private void CombineMeshes()
+	{
+		MeshFilter[] meshFilters = GetComponentsInChildren<MeshFilter>();
+		CombineInstance[] combine = new CombineInstance[meshFilters.Length];
 
+		int i = 0;
+		while (i < meshFilters.Length)
+		{
+			if (meshFilters[i].mesh != null)
+			{
+				combine[i].mesh = meshFilters[i].sharedMesh;
+				combine[i].transform = meshFilters[i].transform.localToWorldMatrix;
+			}
+
+			meshFilters[i].gameObject.SetActive(false);
+			i++;
+		}
+
+		transform.GetComponent<MeshFilter>().mesh = new Mesh();
+		transform.GetComponent<MeshFilter>().mesh.indexFormat = IndexFormat.UInt32;
+		transform.GetComponent<MeshFilter>().mesh.CombineMeshes(combine);
+		transform.gameObject.SetActive(true);
+		foreach (var obj in meshFilters)
+		{
+			if (obj.gameObject == gameObject) continue;
+			Object.Destroy(obj.gameObject);
+		}
+	}
 	private void Generate()
 	{
 		currentString =
