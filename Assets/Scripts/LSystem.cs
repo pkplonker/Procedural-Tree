@@ -12,8 +12,8 @@ using UnityEngine.Rendering;
 public class LSystem : MonoBehaviour
 {
 	[HideInInspector] public bool debugEnabled;
-	 private float rotationAngle = 30f;
-	
+	private float rotationAngle = 30f;
+
 	[SerializeField] private LSystemRule currentRule;
 	[SerializeField] private Material branchMaterial;
 	[SerializeField] private Material leafMaterial;
@@ -49,7 +49,6 @@ public class LSystem : MonoBehaviour
 
 	public void Setup()
 	{
-		
 		mf = GetComponent<MeshFilter>();
 		mf.mesh = null;
 		runTimeRadius = currentRule.radius;
@@ -105,9 +104,6 @@ public class LSystem : MonoBehaviour
 
 	private void Generate()
 	{
-		currentString =
-			"FF[--FF[[[&FFF]FFF]^FFF]][FFFF/////FFFFF][++FF[[[&FFF]FFF]^FFF]]";
-		//test string
 		currentString = currentRule.axiom;
 		for (int i = 0; i < currentIteration; i++)
 		{
@@ -117,7 +113,6 @@ public class LSystem : MonoBehaviour
 			{
 				sb.Append(currentRule.rules.ContainsKey(c) ? currentRule.rules[c] : c.ToString());
 			}
-
 
 			currentString = sb.ToString();
 		}
@@ -136,6 +131,7 @@ public class LSystem : MonoBehaviour
 		{
 			Destroy(e);
 		}
+
 		for (int i = 0; i < currentString.Length; i++)
 		{
 			switch (currentString[i])
@@ -150,20 +146,21 @@ public class LSystem : MonoBehaviour
 					break;
 				case 'X': //nothing
 					break;
-				case 'S': //nothing
-					break;
-				case 'L'://Leaf
-					if (currentIteration < (currentRule.iterations / 3))
+				case 'S': //Flower
+					if (currentIteration < (currentRule.iterations / 2))
 					{
 						break;
 					}
-					
-					GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-					extraParts.Add(sphere);
-					sphere.transform.position = targetTransform.position;
-					sphere.GetComponent<MeshRenderer>().material.color = Color.green;
-					sphere.transform.localScale = new Vector3(currentRule.radius, currentRule.radius, currentRule.radius);
-					sphere.GetComponent<MeshRenderer>().material = leafMaterial;
+
+					ProduceFlower();
+					break;
+				case 'L': //Leaf
+					if (currentIteration < (currentRule.iterations / 2))
+					{
+						break;
+					}
+
+					ProduceLeaf();
 					break;
 				case '+': //rot z+
 					RotateLayer(targetTransform.forward, true);
@@ -201,6 +198,22 @@ public class LSystem : MonoBehaviour
 					break;
 			}
 		}
+	}
+	private void ProduceFlower()
+	{
+		GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+		extraParts.Add(sphere);
+		sphere.transform.position = targetTransform.position;
+		sphere.transform.localScale = new Vector3(currentRule.radius/2, currentRule.radius/2, currentRule.radius/2);
+		sphere.GetComponent<MeshRenderer>().material = flowerMaterial;
+	}
+	private void ProduceLeaf()
+	{
+		GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+		extraParts.Add(sphere);
+		sphere.transform.position = targetTransform.position;
+		sphere.transform.localScale = new Vector3(currentRule.radius, currentRule.radius, currentRule.radius);
+		sphere.GetComponent<MeshRenderer>().material = leafMaterial;
 	}
 
 	private void RotateLayer(Vector3 dir, bool positive)

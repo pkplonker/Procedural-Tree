@@ -214,7 +214,7 @@ Transform:
   m_GameObject: {fileID: 597408692}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0.053, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 10, y: 10, z: 10}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 2
@@ -345,10 +345,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7b880d88c896e7c41a8df3f05772d0b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  treeDataSO: {fileID: 11400000, guid: f696785074f6d384cbcacd0f6306d76f, type: 2}
-  meshRenderer: {fileID: 0}
-  trunkMesh: {fileID: 0}
-  lSystem: {fileID: 0}
 --- !u!4 &1075212034
 Transform:
   m_ObjectHideFlags: 0
@@ -489,8 +485,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1687258581}
-  m_LocalRotation: {x: -0.12835148, y: 0.37862632, z: -0.053486478, w: -0.91504496}
-  m_LocalPosition: {x: 4.542639, y: 3.0758247, z: -4.476948}
+  m_LocalRotation: {x: -0.22372949, y: 0.35595092, z: -0.08854965, w: -0.9029967}
+  m_LocalPosition: {x: 6.788618, y: 7.162963, z: -6.787761}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -725,7 +721,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   debugEnabled: 0
-  currentRule: {fileID: 11400000, guid: 7b0f779a09a5d9a4592c95504dfcd109, type: 2}
+  currentRule: {fileID: 11400000, guid: eba012f2aab3ed040970f4886e4e3747, type: 2}
   branchMaterial: {fileID: 2100000, guid: 625ade8b9ea7d0d4d82c61201415e6f8, type: 2}
   leafMaterial: {fileID: 2100000, guid: 3ac0908ec0c94e341901b7588d2b0984, type: 2}
   flowerMaterial: {fileID: 2100000, guid: 7d0551e93e223744782261542887824c, type: 2}
@@ -750,7 +746,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2063336223}
-  m_Mesh: {fileID: 0}
+  m_Mesh: {fileID: 4300000, guid: c786f50c6a1e16440a0d107b87d44467, type: 2}
 --- !u!23 &2063336227
 MeshRenderer:
   m_ObjectHideFlags: 0
