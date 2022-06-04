@@ -16,12 +16,10 @@ public class LSystem : MonoBehaviour
 	[Range(0.01f, 1f)] [SerializeField] private float radius = 0.1f;
 	[Range(0.01f, .5f)] [SerializeField] private float sliceThickness = .1f;
 	[Range(5, 100)] [SerializeField] int quality = 10;
-	[Range(0.1f, 10f)][SerializeField] float radiusReductionFactor = 5f;
-
+	[Range(0.1f, 10f)] [SerializeField] float radiusReductionFactor = 5f;
+	[SerializeField] private LSystemRule currentRule;
 	private float runTimeRadius;
-	private const string axiom = "X";
 	private Stack<TransformInfo> transformStack;
-	private Dictionary<char, string> rules;
 	private string currentString = "";
 	float branchLength;
 	private List<Vector3> vertices = new List<Vector3>();
@@ -42,21 +40,8 @@ public class LSystem : MonoBehaviour
 		runTimeRadius = radius;
 		branchLength = sliceThickness - (branchLength / 10);
 		transformStack = new Stack<TransformInfo>();
-		rules = new Dictionary<char, string>
-		{
-			//Example F - Axiom X - 22.5 
-			{'X', "F-[[X]+X]+F[+FX]-X"},
-			{'F', "FF"}
+		
 
-			//Example F - Axiom X - 22.5 - modified for 3d
-			//{'X', "F^[[X]+X]&F[^FX]-X"},
-			//{'F', "FF"}
-		};
-		//{'A', "[&FLA]/////[&FL!A]///////[&FLA]"},
-		//{'F', "S ///// F"},
-		//{'S', "FL"},
-		//{'L',"[∧∧{-f+f+f--f+f+f}]"}
-		//{'L', "[∧∧]"}
 		Generate();
 		CreateObjectWithMesh();
 		CombineMeshes();
@@ -109,14 +94,14 @@ public class LSystem : MonoBehaviour
 		currentString =
 			"FF[--FF[[[&FFF]FFF]^FFF]][FFFF/////FFFFF][++FF[[[&FFF]FFF]^FFF]]";
 		//test string
-		currentString = axiom;
+		currentString = currentRule.axiom;
 		for (int i = 0; i < iterations; i++)
 		{
 			StringBuilder sb = new StringBuilder();
-
+			currentRule.UpdateRules();
 			foreach (var c in currentString)
 			{
-				sb.Append(rules.ContainsKey(c) ? rules[c] : c.ToString());
+				sb.Append(currentRule.rules.ContainsKey(c) ? currentRule.rules[c] : c.ToString());
 			}
 
 
@@ -206,7 +191,6 @@ public class LSystem : MonoBehaviour
 	{
 		if (vertices.Count <= quality)
 		{
-			Debug.Log("!");
 			return;
 		}
 

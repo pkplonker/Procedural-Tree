@@ -10,15 +10,15 @@ public class GeneralEditor : Editor
 	public static void GenerateTree()
 	{
 		GameObject obj = new GameObject("New Tree");
-		TreeGenerator tg = obj.AddComponent<TreeGenerator>();
-		TreeDataSO so = ScriptableObject.CreateInstance<TreeDataSO>();
-		AssetDatabase.CreateAsset(so, "Assets/newTree.asset");
+		//TreeGenerator tg = obj.AddComponent<TreeGenerator>();
+		//TreeDataSO so = ScriptableObject.CreateInstance<TreeDataSO>();
+		//AssetDatabase.CreateAsset(so, "Assets/newTree.asset");
 		AssetDatabase.SaveAssets();
 
-		tg.SetTreeData(so);
+		//tg.SetTreeData(so);
 		EditorUtility.FocusProjectWindow();
 
-		Selection.activeObject = so;
+		//Selection.activeObject = so;
 
 	}
 	[CanEditMultipleObjects]
