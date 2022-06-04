@@ -133,17 +133,13 @@ public class LSystem : MonoBehaviour
 		{
 			switch (currentString[i])
 			{
-				case 'F':
-
-					//straight line
+				case 'F': //straight line
 					GenerateVerts(false);
 					targetTransform.position += (targetTransform.up * branchLength);
 					GenerateSection(true);
 					CreateObjectWithMesh();
 					break;
-				case 'f':
-
-
+				case 'f': //nothing
 					break;
 				case 'X': //nothing
 					break;
