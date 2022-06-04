@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: newTree
   m_EditorClassIdentifier: 
   debugEnabled: 0
-  radius: 0.75
-  sliceHeight: 0.2
-  numberOfSlices: 5
-  amountOfVertsAroundCircumference: 6
+  radius: 0.31
+  sliceHeight: 0.073
+  numberOfSlices: 155
+  amountOfVertsAroundCircumference: 18
   startPos: {x: 0, y: 0, z: 0}
   rotation: {x: 0, y: 0, z: 0}
   branchRadiusReductionCurve:
@@ -91,6 +91,6 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  branchMaterial: {fileID: 0}
+  branchMaterial: {fileID: 2100000, guid: 625ade8b9ea7d0d4d82c61201415e6f8, type: 2}
   randomise: 0
   randomFactor: 20
