@@ -28,6 +28,7 @@ public class LSystem : MonoBehaviour
 	[HideInInspector] public float leafChance;
 	[HideInInspector] public float growthChance;
 	[HideInInspector] public bool randomiseGrowthLength;
+	[HideInInspector] public bool randomiseAngle;
 
 	#endregion
 
@@ -283,7 +284,18 @@ public class LSystem : MonoBehaviour
 	private void RotateLayer(Vector3 dir, bool positive)
 	{
 		pmg.GenerateVerts(false);
-		targetTransform.Rotate(dir * (positive ? rotationAngle : -rotationAngle));
+
+		if (randomise && randomiseAngle)
+		{
+			float randomAngle = Random.Range(positive ? 0 : -rotationAngle * 2, positive ? rotationAngle * 2 : 0);
+			targetTransform.Rotate(dir * (randomAngle));
+
+		}
+		else
+		{
+			targetTransform.Rotate(dir * (positive ? rotationAngle : -rotationAngle));
+
+		}
 		GenerateSection(false);
 		CreateObjectWithMesh();
 	}
