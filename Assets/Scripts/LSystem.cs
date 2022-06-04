@@ -4,42 +4,53 @@ using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
-using Random = UnityEngine.Random;
 
+
+[RequireComponent(typeof(MeshFilter))]
+[RequireComponent(typeof(MeshRenderer))]
 public class LSystem : MonoBehaviour
 {
+	[HideInInspector] public bool debugEnabled;
 	[SerializeField] private float rotationAngleMax = 30f;
-
-	[SerializeField] private int iterations = 5;
+	[Range(1, 7)] [SerializeField] private int iterations = 5;
 	[Range(0.01f, 1f)] [SerializeField] private float radius = 0.1f;
-	float branchLength;
 	[Range(0.01f, .5f)] [SerializeField] private float sliceThickness = .1f;
 	[Range(5, 100)] [SerializeField] int quality = 10;
-	[SerializeField] float radiusReductionFactor = 5f;
+	[Range(0.1f, 10f)][SerializeField] float radiusReductionFactor = 5f;
 
+	private float runTimeRadius;
 	private const string axiom = "X";
 	private Stack<TransformInfo> transformStack;
 	private Dictionary<char, string> rules;
 	private string currentString = "";
-
-	public List<Vector3> vertices = new List<Vector3>();
+	float branchLength;
+	private List<Vector3> vertices = new List<Vector3>();
 	private List<int> triangles = new List<int>();
 	private Transform targetTransform;
-	private int numberOfSlicesGenerated;
-	private List<Mesh> meshes = new List<Mesh>();
-	[SerializeField] private bool debugEnabled;
+	private MeshFilter mf;
+
 
 	private void Start()
 	{
+		Setup();
+	}
+
+	public void Setup()
+	{
+		mf = GetComponent<MeshFilter>();
+		mf.mesh = null;
+		runTimeRadius = radius;
 		branchLength = sliceThickness - (branchLength / 10);
 		transformStack = new Stack<TransformInfo>();
 		rules = new Dictionary<char, string>
 		{
-			//b - X - 22.5
-			//{'X', "F-[[X]+X]+F[+FX]-X"},
-			//{'F', "FF"}
-			{'X', "F^[[X]+X]&F[^FX]-X"},
+			//Example F - Axiom X - 22.5 
+			{'X', "F-[[X]+X]+F[+FX]-X"},
 			{'F', "FF"}
+
+			//Example F - Axiom X - 22.5 - modified for 3d
+			//{'X', "F^[[X]+X]&F[^FX]-X"},
+			//{'F', "FF"}
 		};
 		//{'A', "[&FLA]/////[&FL!A]///////[&FLA]"},
 		//{'F', "S ///// F"},
@@ -76,9 +87,23 @@ public class LSystem : MonoBehaviour
 		foreach (var obj in meshFilters)
 		{
 			if (obj.gameObject == gameObject) continue;
-			Object.Destroy(obj.gameObject);
+			if (Application.isPlaying)
+			{
+				Destroy(obj.gameObject);
+			}
+			else
+			{
+				DestroyImmediate(obj.gameObject);
+			}
 		}
 	}
+
+	public void SaveMesh()
+	{
+		AssetDatabase.CreateAsset(GetComponent<MeshFilter>().mesh, "Assets/Resources/GeneratedTrees/treeMesh.asset");
+		AssetDatabase.SaveAssets();
+	}
+
 	private void Generate()
 	{
 		currentString =
@@ -100,7 +125,13 @@ public class LSystem : MonoBehaviour
 
 		Debug.Log(currentString);
 
-		targetTransform = new GameObject("target").transform;
+		if (targetTransform == null)
+			targetTransform = new GameObject("target").transform;
+		else
+		{
+			targetTransform.position = Vector3.zero;
+			targetTransform.rotation = quaternion.identity;
+		}
 
 
 		for (int i = 0; i < currentString.Length; i++)
@@ -125,33 +156,33 @@ public class LSystem : MonoBehaviour
 					break;
 				case 'L': //nothing
 					break;
-				case '+'://rot z+
+				case '+': //rot z+
 					RotateLayer(targetTransform.forward, true);
-					break; 
-				case '-'://rot z-
+					break;
+				case '-': //rot z-
 					RotateLayer(targetTransform.forward, false);
 					break;
-				case '&'://rot x+
+				case '&': //rot x+
 					RotateLayer(targetTransform.right, true);
 					break;
-				case '^'://rot x-
+				case '^': //rot x-
 					RotateLayer(targetTransform.right, false);
 					break;
-				case '?'://twist +
+				case '?': //twist +
 					RotateLayer(targetTransform.up, true);
 					break;
 				case '/': //twist -
 					RotateLayer(targetTransform.up, false);
 					break;
 				case '[': //save
-					transformStack.Push(new TransformInfo(targetTransform, radius));
+					transformStack.Push(new TransformInfo(targetTransform, runTimeRadius));
 					break;
 				case ']': //return
 					//	CreateObjectWithMesh();
 					TransformInfo ti = transformStack.Pop();
 					targetTransform.position = ti.position;
 					targetTransform.rotation = ti.rotation;
-					radius = ti.radius;
+					runTimeRadius = ti.radius;
 					GenerateVerts(false);
 					vertices.Clear();
 					triangles.Clear();
@@ -166,7 +197,7 @@ public class LSystem : MonoBehaviour
 	private void RotateLayer(Vector3 dir, bool positive)
 	{
 		GenerateVerts(false);
-		targetTransform.Rotate(dir *(positive?rotationAngleMax:-rotationAngleMax));
+		targetTransform.Rotate(dir * (positive ? rotationAngleMax : -rotationAngleMax));
 		GenerateSection(false);
 		CreateObjectWithMesh();
 	}
@@ -188,8 +219,23 @@ public class LSystem : MonoBehaviour
 		};
 		var mrr = ob.AddComponent<MeshRenderer>();
 		var mff = ob.AddComponent<MeshFilter>();
+		var r = mff.GetComponent<Renderer>();
+		r.shadowCastingMode = ShadowCastingMode.Off;
+		r.receiveShadows = false;
 		mff.mesh = GenerateMesh();
 		mrr.sharedMaterial = GetComponent<MeshRenderer>().sharedMaterial;
+	}
+
+	private void OnDisable()
+	{
+		if (mf != null)
+			mf.mesh = null;
+	}
+
+	private void OnDestroy()
+	{
+		if (mf != null)
+			mf.mesh = null;
 	}
 
 	private Mesh GenerateMesh()
@@ -217,10 +263,9 @@ public class LSystem : MonoBehaviour
 	{
 		if (reduceRad)
 		{
-			radius = radius - ((radius / 100) * (radiusReductionFactor));
+			runTimeRadius = runTimeRadius - ((runTimeRadius / 100) * (radiusReductionFactor));
 		}
 
-		numberOfSlicesGenerated++;
 		for (int y = 0; y < quality; y++)
 		{
 			vertices.Add(CalculateVertPosition(y));
@@ -233,9 +278,9 @@ public class LSystem : MonoBehaviour
 		                     MathFunctions.TAU;
 
 		Vector3 pos = targetTransform.position + new Vector3(
-			Mathf.Cos(angleRadians) * radius,
+			Mathf.Cos(angleRadians) * runTimeRadius,
 			0,
-			Mathf.Sin(angleRadians) * radius
+			Mathf.Sin(angleRadians) * runTimeRadius
 		);
 		if (debugEnabled)
 		{
