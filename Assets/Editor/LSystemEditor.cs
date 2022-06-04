@@ -8,6 +8,9 @@ using UnityEngine.UI;
 [CustomEditor(typeof(LSystem))]
 public class LSystemEditor : Editor
 {
+	/// <summary>
+	///   <para>Custom editor for additional buttons to generate mesh and for saving</para>
+	/// </summary>
 	public override void OnInspectorGUI()
 	{
 		LSystem t = (LSystem) target;
@@ -51,7 +54,9 @@ public class LSystemEditor : Editor
 		EditorGUILayout.Space();
 		EditorGUILayout.Space();
 	}
-
+	/// <summary>
+	///   <para>Produces a line separator for custom editor</para>
+	/// </summary>
 	private void LineBreak(int height = 1)
 	{
 		Rect rect = EditorGUILayout.GetControlRect(false, height);

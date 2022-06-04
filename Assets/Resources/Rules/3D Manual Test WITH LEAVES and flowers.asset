@@ -15,7 +15,7 @@ MonoBehaviour:
   axiom: X
   ruleKeys: 58004600
   ruleList:
-  - 'F[^X][^^FXL][&&FX][&&FX][++FX][++FX][--FX][---FX][//FX][???FX] '
+  - 'F[^X][^^FXL][&&FX][&&FX][++FX][++FX][--FSX][---FX][//FX][???FX] '
   - FF
   radius: 0.1
   sliceThickness: 0.1

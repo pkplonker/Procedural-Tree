@@ -16,7 +16,9 @@ public class PlayGrowth : MonoBehaviour
 		lSystem = GetComponent<LSystem>();
 		lSystemRule = lSystem.GetLSystemRule();
 	}
-
+	/// <summary>
+	///   <para>Trigers new growth from iteration 0 - Loops until rules max iterations</para>
+	/// </summary>
 	public void Play()
 	{
 		if (lSystem == null || lSystemRule == null)
@@ -29,7 +31,9 @@ public class PlayGrowth : MonoBehaviour
 		currentIteration = 1;
 		StartCoroutine(Delay());
 	}
-
+	/// <summary>
+	///   <para>Provides delay between iterations</para>
+	/// </summary>
 	private IEnumerator Delay()
 	{
 		if (currentIteration != 1)

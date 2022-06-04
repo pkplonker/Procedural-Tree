@@ -14,52 +14,77 @@ public class LSystem : MonoBehaviour
 	[HideInInspector] public bool debugEnabled;
 	private float rotationAngle = 30f;
 
-	[SerializeField] private LSystemRule currentRule;
+	[SerializeField] public LSystemRule currentRule;
 	[SerializeField] private Material branchMaterial;
 	[SerializeField] private Material leafMaterial;
 	[SerializeField] private Material flowerMaterial;
 
 
-	private float runTimeRadius;
+	public float runTimeRadius;
 	private Stack<TransformInfo> transformStack;
 	private string currentString = "";
 	float branchLength;
-	private List<Vector3> vertices = new List<Vector3>();
-	private List<int> triangles = new List<int>();
-	private Transform targetTransform;
+
+	public Transform targetTransform;
 	private MeshFilter mf;
 	private int currentIteration;
 	private List<GameObject> extraParts = new List<GameObject>();
+	private ProcMeshGeneration pmg;
 
-	private void OnValidate()
-	{
-		AlignToRule();
-	}
+	public void SetIterations(int currentIteration) => this.currentIteration = currentIteration;
 
-	private void Start()
-	{
-		AlignToRule();
-	}
+	/// <summary>
+	///   <para>Accessor for current rule.</para>
+	/// </summary>
+	/// <returns>
+	///   <para>The current rule SO.</para>
+	/// </returns>
+	public LSystemRule GetLSystemRule() => currentRule;
 
+	private void OnValidate() => AlignToRule();
+	private void Start() => AlignToRule();
+
+	/// <summary>
+	///   <para>Resets to current rule values</para>
+	/// </summary>
 	public void AlignToRule()
 	{
 		currentIteration = currentRule.iterations;
 		rotationAngle = currentRule.angle;
 	}
 
+	/// <summary>
+	///   <para>Triggers Mesh generation</para>
+	/// </summary>
 	public void Setup()
 	{
+		pmg ??= new ProcMeshGeneration(this, debugEnabled);
 		mf = GetComponent<MeshFilter>();
 		mf.mesh = null;
 		runTimeRadius = currentRule.radius;
 		branchLength = currentRule.sliceThickness - (branchLength / 10);
 		transformStack = new Stack<TransformInfo>();
+		if (targetTransform == null)
+			targetTransform = new GameObject("target").transform;
+		else
+		{
+			targetTransform.position = Vector3.zero;
+			targetTransform.rotation = quaternion.identity;
+		}
+
+		foreach (var e in extraParts)
+		{
+			Destroy(e);
+		}
 
 		Generate();
 		CreateObjectWithMesh();
 		CombineMeshes();
 	}
 
+	/// <summary>
+	///   <para>Combine meshes from instantiated children into final mesh</para>
+	/// </summary>
 	private void CombineMeshes()
 	{
 		MeshFilter[] meshFilters = GetComponentsInChildren<MeshFilter>();
@@ -96,48 +121,28 @@ public class LSystem : MonoBehaviour
 		}
 	}
 
+	/// <summary>
+	///   <para>Saves mesh into resources folder</para>
+	/// </summary>
 	public void SaveMesh()
 	{
 		AssetDatabase.CreateAsset(GetComponent<MeshFilter>().mesh, "Assets/Resources/GeneratedTrees/treeMesh.asset");
 		AssetDatabase.SaveAssets();
 	}
 
+	/// <summary>
+	///   <para>Runs L System string generation/Mesh generation</para>
+	/// </summary>
 	private void Generate()
 	{
-		currentString = currentRule.axiom;
-		for (int i = 0; i < currentIteration; i++)
+		BuildString();
+
+		foreach (var t in currentString)
 		{
-			StringBuilder sb = new StringBuilder();
-			currentRule.UpdateRules();
-			foreach (var c in currentString)
-			{
-				sb.Append(currentRule.rules.ContainsKey(c) ? currentRule.rules[c] : c.ToString());
-			}
-
-			currentString = sb.ToString();
-		}
-
-		Debug.Log(currentString);
-
-		if (targetTransform == null)
-			targetTransform = new GameObject("target").transform;
-		else
-		{
-			targetTransform.position = Vector3.zero;
-			targetTransform.rotation = quaternion.identity;
-		}
-
-		foreach (var e in extraParts)
-		{
-			Destroy(e);
-		}
-
-		for (int i = 0; i < currentString.Length; i++)
-		{
-			switch (currentString[i])
+			switch (t)
 			{
 				case 'F': //straight line
-					GenerateVerts(false);
+					pmg.GenerateVerts(false);
 					targetTransform.position += (targetTransform.up * branchLength);
 					GenerateSection(true);
 					CreateObjectWithMesh();
@@ -147,19 +152,11 @@ public class LSystem : MonoBehaviour
 				case 'X': //nothing
 					break;
 				case 'S': //Flower
-					if (currentIteration < (currentRule.iterations / 2))
-					{
-						break;
-					}
-
+					if (currentIteration < (currentRule.iterations / 2)) break;
 					ProduceFlower();
 					break;
 				case 'L': //Leaf
-					if (currentIteration < (currentRule.iterations / 2))
-					{
-						break;
-					}
-
+					if (currentIteration < (currentRule.iterations / 2)) break;
 					ProduceLeaf();
 					break;
 				case '+': //rot z+
@@ -189,24 +186,51 @@ public class LSystem : MonoBehaviour
 					targetTransform.position = ti.position;
 					targetTransform.rotation = ti.rotation;
 					runTimeRadius = ti.radius;
-					GenerateVerts(false);
-					vertices.Clear();
-					triangles.Clear();
+					pmg.GenerateVerts(false);
+					pmg.Clear();
 					break;
 				default:
-					Debug.LogError("Error in string" + currentString[i]);
+					Debug.LogError("Error in string" + t);
 					break;
 			}
 		}
 	}
+
+	/// <summary>
+	///   <para>Runs L System string generation</para>
+	/// </summary>
+	private void BuildString()
+	{
+		currentString = currentRule.axiom;
+		for (int i = 0; i < currentIteration; i++)
+		{
+			StringBuilder sb = new StringBuilder();
+			currentRule.UpdateRules();
+			foreach (var c in currentString)
+			{
+				sb.Append(currentRule.rules.ContainsKey(c) ? currentRule.rules[c] : c.ToString());
+			}
+
+			currentString = sb.ToString();
+		}
+	}
+
+	/// <summary>
+	///   <para>Generates flower object</para>
+	/// </summary>
 	private void ProduceFlower()
 	{
 		GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
 		extraParts.Add(sphere);
 		sphere.transform.position = targetTransform.position;
-		sphere.transform.localScale = new Vector3(currentRule.radius/2, currentRule.radius/2, currentRule.radius/2);
+		sphere.transform.localScale =
+			new Vector3(currentRule.radius / 2, currentRule.radius / 2, currentRule.radius / 2);
 		sphere.GetComponent<MeshRenderer>().material = flowerMaterial;
 	}
+
+	/// <summary>
+	///   <para>Generates leaf object</para>
+	/// </summary>
 	private void ProduceLeaf()
 	{
 		GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -216,17 +240,26 @@ public class LSystem : MonoBehaviour
 		sphere.GetComponent<MeshRenderer>().material = leafMaterial;
 	}
 
+	/// <summary>
+	///   <para>Rotates current targetPos</para>
+	/// </summary>
+	/// <param name="dir">Axis of rotation</param>
+	///
+	/// <param name="positive">true = positive, false = negative</param>
 	private void RotateLayer(Vector3 dir, bool positive)
 	{
-		GenerateVerts(false);
+		pmg.GenerateVerts(false);
 		targetTransform.Rotate(dir * (positive ? rotationAngle : -rotationAngle));
 		GenerateSection(false);
 		CreateObjectWithMesh();
 	}
 
+	/// <summary>
+	///   <para>Generates flower object</para>
+	/// </summary>
 	private void CreateObjectWithMesh()
 	{
-		if (vertices.Count <= currentRule.quality)
+		if (pmg.vertices.Count <= currentRule.quality)
 		{
 			return;
 		}
@@ -242,6 +275,7 @@ public class LSystem : MonoBehaviour
 		mff.mesh = GenerateMesh();
 	}
 
+	
 	private void OnDisable()
 	{
 		if (mf != null)
@@ -253,7 +287,11 @@ public class LSystem : MonoBehaviour
 		if (mf != null)
 			mf.mesh = null;
 	}
-
+	
+	/// <summary>
+	///   <para>Generates mesh from previously generated list of verts and triangles</para>
+	/// <returns>Mesh of produced section</returns>
+	/// </summary>
 	private Mesh GenerateMesh()
 	{
 		Mesh mesh = new Mesh
@@ -261,101 +299,26 @@ public class LSystem : MonoBehaviour
 			name = "New tree"
 		};
 		mesh.Clear();
-		mesh.SetVertices(vertices);
-		mesh.SetTriangles(triangles, 0);
+		mesh.SetVertices(pmg.vertices);
+		mesh.SetTriangles(pmg.triangles, 0);
 		mesh.RecalculateNormals();
-		vertices.Clear();
-		triangles.Clear();
+		pmg.Clear();
 		return mesh;
 	}
-
+	
+	/// <summary>
+	///   <para>Generates verts and associated triangles for new mesh section</para>
+	/// <param name="reduceRad">True = Reduces end vert radius</param>
+	/// </summary>
 	private void GenerateSection(bool reduceRad)
 	{
-		GenerateVerts(reduceRad);
-		GenerateTriangles();
+		pmg.GenerateVerts(reduceRad);
+		pmg.GenerateTriangles();
 	}
 
-	private void GenerateVerts(bool reduceRad)
-	{
-		if (reduceRad)
-		{
-			runTimeRadius = runTimeRadius - ((runTimeRadius / 100) * (currentRule.radiusReductionFactor));
-		}
-
-		for (int y = 0; y < currentRule.quality; y++)
-		{
-			vertices.Add(CalculateVertPosition(y));
-		}
-	}
-
-	private Vector3 CalculateVertPosition(int vertIndexAroundCircumference)
-	{
-		float angleRadians = vertIndexAroundCircumference / (float) currentRule.quality *
-		                     MathFunctions.TAU;
-
-		Vector3 pos = targetTransform.position + new Vector3(
-			Mathf.Cos(angleRadians) * runTimeRadius,
-			0,
-			Mathf.Sin(angleRadians) * runTimeRadius
-		);
-		if (debugEnabled)
-		{
-			GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-
-			sphere.transform.position = pos;
-			sphere.transform.localScale = Vector3.one * 0.02f;
-			sphere.GetComponent<MeshRenderer>().sharedMaterial.color = Color.red;
-			GameObject s = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-			s.name = "centre";
-			s.transform.position = targetTransform.position;
-			s.transform.localScale = Vector3.one * 0.02f;
-			s.GetComponent<MeshRenderer>().material.color = Color.blue;
-		}
-
-		return pos;
-	}
-
-
-	private void GenerateTriangles()
-	{
-		for (int i = 0; i < (vertices.Count / currentRule.quality) - 1; i++)
-		{
-			GenerateLayerTriangles(i);
-		}
-	}
-
-	private void GenerateLayerTriangles(int layer)
-	{
-		int layerAddition = layer * currentRule.quality;
-		for (int i = 0; i < currentRule.quality - 1; i++)
-		{
-			var root = i + layerAddition;
-			var rootLeft = root + 1;
-			int rootUpleft = root + currentRule.quality + 1;
-			int rootUp = root + currentRule.quality;
-
-
-			triangles.Add(root);
-			triangles.Add(rootUpleft);
-			triangles.Add(rootLeft);
-			triangles.Add(root);
-			triangles.Add(rootUp);
-			triangles.Add(rootUpleft);
-		}
-
-		int start = currentRule.quality - 1 + layerAddition;
-		int startLeft = layerAddition;
-		int startLeftUp = start + 1;
-		int startup = start + currentRule.quality;
-
-		triangles.Add(start);
-		triangles.Add(startLeftUp);
-		triangles.Add(startLeft);
-		triangles.Add(start);
-		triangles.Add(startup);
-		triangles.Add(startLeftUp);
-	}
-
+	/// <summary>
+	///   <para>Container for transform data to allow stack popping</para>
+	/// </summary>
 	private class TransformInfo
 	{
 		public Vector3 position;
@@ -371,8 +334,4 @@ public class LSystem : MonoBehaviour
 			this.radius = radius;
 		}
 	}
-
-	public void SetIterations(int currentIteration) => this.currentIteration = currentIteration;
-
-	public LSystemRule GetLSystemRule() => currentRule;
 }
