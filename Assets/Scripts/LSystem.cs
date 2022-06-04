@@ -5,6 +5,7 @@ using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
+using Random = System.Random;
 
 
 [RequireComponent(typeof(MeshFilter))]
@@ -18,7 +19,7 @@ public class LSystem : MonoBehaviour
 	[SerializeField] private Material branchMaterial;
 	[SerializeField] private Material leafMaterial;
 	[SerializeField] private Material flowerMaterial;
-
+	[SerializeField] private int randomSeed;
 
 	public float runTimeRadius;
 	private Stack<TransformInfo> transformStack;
@@ -30,7 +31,7 @@ public class LSystem : MonoBehaviour
 	private int currentIteration;
 	private List<GameObject> extraParts = new List<GameObject>();
 	private ProcMeshGeneration pmg;
-
+	private Random prng;
 	public void SetIterations(int currentIteration) => this.currentIteration = currentIteration;
 
 	/// <summary>
@@ -58,12 +59,14 @@ public class LSystem : MonoBehaviour
 	/// </summary>
 	public void Setup()
 	{
+		prng = new Random(randomSeed);
 		pmg ??= new ProcMeshGeneration(this, debugEnabled);
 		mf = GetComponent<MeshFilter>();
 		mf.mesh = null;
 		runTimeRadius = currentRule.radius;
 		branchLength = currentRule.sliceThickness - (branchLength / 10);
 		transformStack = new Stack<TransformInfo>();
+
 		if (targetTransform == null)
 			targetTransform = new GameObject("target").transform;
 		else
@@ -190,7 +193,6 @@ public class LSystem : MonoBehaviour
 					pmg.Clear();
 					break;
 				default:
-					Debug.LogError("Error in string" + t);
 					break;
 			}
 		}
@@ -206,10 +208,46 @@ public class LSystem : MonoBehaviour
 		{
 			StringBuilder sb = new StringBuilder();
 			currentRule.UpdateRules();
-			foreach (var c in currentString)
+
+			for (int j = 0; j < currentString.Length; j++)
 			{
-				sb.Append(currentRule.rules.ContainsKey(c) ? currentRule.rules[c] : c.ToString());
+				char letter = currentString[j];
+				float value;
+				if (j!=currentString.Length-1 &&   currentString[j+1] == '(')
+				{
+					string s="";
+					
+					for (int k = 0; k < 7; k++)
+					{
+						if (currentString[j + k+2] == ')') break;
+						s += currentString[j + k+2];
+					}
+					Debug.Log("string val = " + s);
+					value = float.Parse(s);
+					Debug.Log("float val = " + value);
+
+					if (value>= UnityEngine.Random.value)
+					{
+						sb.Append(currentRule.rules.ContainsKey(letter) ? currentRule.rules[letter] : letter.ToString());
+						sb.Append(currentRule.rules.ContainsKey(currentString[j+s.Length+3]) ? currentRule.rules[currentString[j+s.Length+3]] : letter.ToString());
+						j += s.Length+3;
+						Debug.Log("passed random");
+					}
+					else
+					{
+						sb.Append(currentRule.rules.ContainsKey(letter) ? currentRule.rules[letter] : letter.ToString());
+
+						j += s.Length+4;
+						Debug.Log("failed random");
+
+					}
+				}
+				else
+				{
+					sb.Append(currentRule.rules.ContainsKey(letter) ? currentRule.rules[letter] : letter.ToString());
+				}
 			}
+
 
 			currentString = sb.ToString();
 		}
@@ -275,7 +313,7 @@ public class LSystem : MonoBehaviour
 		mff.mesh = GenerateMesh();
 	}
 
-	
+
 	private void OnDisable()
 	{
 		if (mf != null)
@@ -287,7 +325,7 @@ public class LSystem : MonoBehaviour
 		if (mf != null)
 			mf.mesh = null;
 	}
-	
+
 	/// <summary>
 	///   <para>Generates mesh from previously generated list of verts and triangles</para>
 	/// <returns>Mesh of produced section</returns>
@@ -305,7 +343,7 @@ public class LSystem : MonoBehaviour
 		pmg.Clear();
 		return mesh;
 	}
-	
+
 	/// <summary>
 	///   <para>Generates verts and associated triangles for new mesh section</para>
 	/// <param name="reduceRad">True = Reduces end vert radius</param>

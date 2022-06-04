@@ -40,15 +40,9 @@ public class PlayGrowth : MonoBehaviour
 		{
 			yield return new WaitForSeconds(delayInSeconds);
 		}
-
 		lSystem.SetIterations(currentIteration);
 		currentIteration++;
-
 		lSystem.Setup();
-		Debug.Log("Delay iteration " + currentIteration);
-
-		Debug.Log("Delay completed for iteration " + currentIteration);
-
 		if (currentIteration <= lSystemRule.iterations)
 		{
 			StartCoroutine(Delay());
