@@ -15,7 +15,16 @@ public class LSystemEditor : Editor
 		EditorGUILayout.Space();
 		if (GUILayout.Button("Force Regenerate Mesh"))
 		{
-			t.Setup();
+			if (Application.isPlaying)
+			{
+				t.AlignToRule();
+				t.Setup();
+			}
+			else
+			{
+				Debug.LogWarning("Can only be run in play mode");
+			}
+			
 		}
 		
 		EditorGUILayout.Space();
@@ -29,7 +38,14 @@ public class LSystemEditor : Editor
 		EditorGUILayout.Space();
 		if (GUILayout.Button("Save Mesh"))
 		{
-			t.SaveMesh();
+			if (Application.isPlaying)
+			{
+				t.SaveMesh();
+			}
+			else
+			{
+				Debug.LogWarning("Can only be run in play mode");
+			}
 		}
 		
 		EditorGUILayout.Space();

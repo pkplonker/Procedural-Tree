@@ -12,12 +12,14 @@ using UnityEngine.Rendering;
 public class LSystem : MonoBehaviour
 {
 	[HideInInspector] public bool debugEnabled;
-	[SerializeField] private float rotationAngle = 30f;
-	[Range(0.01f, 1f)] [SerializeField] private float radius = 0.1f;
-	[Range(0.01f, .5f)] [SerializeField] private float sliceThickness = .1f;
-	[Range(5, 100)] [SerializeField] int quality = 10;
-	[Range(0.1f, 10f)] [SerializeField] float radiusReductionFactor = 5f;
+	 private float rotationAngle = 30f;
+	
 	[SerializeField] private LSystemRule currentRule;
+	[SerializeField] private Material branchMaterial;
+	[SerializeField] private Material leafMaterial;
+	[SerializeField] private Material flowerMaterial;
+
+
 	private float runTimeRadius;
 	private Stack<TransformInfo> transformStack;
 	private string currentString = "";
@@ -27,6 +29,7 @@ public class LSystem : MonoBehaviour
 	private Transform targetTransform;
 	private MeshFilter mf;
 	private int currentIteration;
+	private List<GameObject> extraParts = new List<GameObject>();
 
 	private void OnValidate()
 	{
@@ -38,7 +41,7 @@ public class LSystem : MonoBehaviour
 		AlignToRule();
 	}
 
-	private void AlignToRule()
+	public void AlignToRule()
 	{
 		currentIteration = currentRule.iterations;
 		rotationAngle = currentRule.angle;
@@ -46,10 +49,11 @@ public class LSystem : MonoBehaviour
 
 	public void Setup()
 	{
+		
 		mf = GetComponent<MeshFilter>();
 		mf.mesh = null;
-		runTimeRadius = radius;
-		branchLength = sliceThickness - (branchLength / 10);
+		runTimeRadius = currentRule.radius;
+		branchLength = currentRule.sliceThickness - (branchLength / 10);
 		transformStack = new Stack<TransformInfo>();
 
 		Generate();
@@ -128,7 +132,10 @@ public class LSystem : MonoBehaviour
 			targetTransform.rotation = quaternion.identity;
 		}
 
-
+		foreach (var e in extraParts)
+		{
+			Destroy(e);
+		}
 		for (int i = 0; i < currentString.Length; i++)
 		{
 			switch (currentString[i])
@@ -145,7 +152,18 @@ public class LSystem : MonoBehaviour
 					break;
 				case 'S': //nothing
 					break;
-				case 'L': //nothing
+				case 'L'://Leaf
+					if (currentIteration < (currentRule.iterations / 3))
+					{
+						break;
+					}
+					
+					GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+					extraParts.Add(sphere);
+					sphere.transform.position = targetTransform.position;
+					sphere.GetComponent<MeshRenderer>().material.color = Color.green;
+					sphere.transform.localScale = new Vector3(currentRule.radius, currentRule.radius, currentRule.radius);
+					sphere.GetComponent<MeshRenderer>().material = leafMaterial;
 					break;
 				case '+': //rot z+
 					RotateLayer(targetTransform.forward, true);
@@ -195,7 +213,7 @@ public class LSystem : MonoBehaviour
 
 	private void CreateObjectWithMesh()
 	{
-		if (vertices.Count <= quality)
+		if (vertices.Count <= currentRule.quality)
 		{
 			return;
 		}
@@ -207,13 +225,8 @@ public class LSystem : MonoBehaviour
 				parent = transform
 			}
 		};
-		var mrr = ob.AddComponent<MeshRenderer>();
 		var mff = ob.AddComponent<MeshFilter>();
-		var r = mff.GetComponent<Renderer>();
-		r.shadowCastingMode = ShadowCastingMode.Off;
-		r.receiveShadows = false;
 		mff.mesh = GenerateMesh();
-		mrr.sharedMaterial = GetComponent<MeshRenderer>().sharedMaterial;
 	}
 
 	private void OnDisable()
@@ -253,10 +266,10 @@ public class LSystem : MonoBehaviour
 	{
 		if (reduceRad)
 		{
-			runTimeRadius = runTimeRadius - ((runTimeRadius / 100) * (radiusReductionFactor));
+			runTimeRadius = runTimeRadius - ((runTimeRadius / 100) * (currentRule.radiusReductionFactor));
 		}
 
-		for (int y = 0; y < quality; y++)
+		for (int y = 0; y < currentRule.quality; y++)
 		{
 			vertices.Add(CalculateVertPosition(y));
 		}
@@ -264,7 +277,7 @@ public class LSystem : MonoBehaviour
 
 	private Vector3 CalculateVertPosition(int vertIndexAroundCircumference)
 	{
-		float angleRadians = vertIndexAroundCircumference / (float) quality *
+		float angleRadians = vertIndexAroundCircumference / (float) currentRule.quality *
 		                     MathFunctions.TAU;
 
 		Vector3 pos = targetTransform.position + new Vector3(
@@ -292,7 +305,7 @@ public class LSystem : MonoBehaviour
 
 	private void GenerateTriangles()
 	{
-		for (int i = 0; i < (vertices.Count / quality) - 1; i++)
+		for (int i = 0; i < (vertices.Count / currentRule.quality) - 1; i++)
 		{
 			GenerateLayerTriangles(i);
 		}
@@ -300,13 +313,13 @@ public class LSystem : MonoBehaviour
 
 	private void GenerateLayerTriangles(int layer)
 	{
-		int layerAddition = layer * quality;
-		for (int i = 0; i < quality - 1; i++)
+		int layerAddition = layer * currentRule.quality;
+		for (int i = 0; i < currentRule.quality - 1; i++)
 		{
 			var root = i + layerAddition;
 			var rootLeft = root + 1;
-			int rootUpleft = root + quality + 1;
-			int rootUp = root + quality;
+			int rootUpleft = root + currentRule.quality + 1;
+			int rootUp = root + currentRule.quality;
 
 
 			triangles.Add(root);
@@ -317,10 +330,10 @@ public class LSystem : MonoBehaviour
 			triangles.Add(rootUpleft);
 		}
 
-		int start = quality - 1 + layerAddition;
+		int start = currentRule.quality - 1 + layerAddition;
 		int startLeft = layerAddition;
 		int startLeftUp = start + 1;
-		int startup = start + quality;
+		int startup = start + currentRule.quality;
 
 		triangles.Add(start);
 		triangles.Add(startLeftUp);

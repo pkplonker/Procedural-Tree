@@ -45,7 +45,7 @@ public class PlayGrowth : MonoBehaviour
 
 		Debug.Log("Delay completed for iteration " + currentIteration);
 
-		if (currentIteration < lSystemRule.iterations)
+		if (currentIteration <= lSystemRule.iterations)
 		{
 			StartCoroutine(Delay());
 		}

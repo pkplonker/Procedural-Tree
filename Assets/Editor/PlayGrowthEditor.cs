@@ -11,7 +11,15 @@ public class PlayGrowthEditor : Editor
 		PlayGrowth t = (PlayGrowth) target;
 		if (GUILayout.Button("Play Growth"))
 		{
-			t.Play();
+			if (Application.isPlaying)
+			{
+				t.Play();
+			}
+			else
+			{
+				Debug.LogWarning("Can only be run in play mode");
+			}
+			
 		}
 		DrawDefaultInspector();
 
