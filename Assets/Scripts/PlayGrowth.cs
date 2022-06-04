@@ -24,6 +24,7 @@ public class PlayGrowth : MonoBehaviour
 			Debug.LogWarning("Missing L System reqs");
 			return;
 		}
+		lSystemRule = lSystem.GetLSystemRule();
 
 		currentIteration = 1;
 		StartCoroutine(Delay());

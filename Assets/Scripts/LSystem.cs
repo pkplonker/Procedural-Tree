@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Mathematics;
@@ -11,7 +12,7 @@ using UnityEngine.Rendering;
 public class LSystem : MonoBehaviour
 {
 	[HideInInspector] public bool debugEnabled;
-	[SerializeField] private float rotationAngleMax = 30f;
+	[SerializeField] private float rotationAngle = 30f;
 	[Range(0.01f, 1f)] [SerializeField] private float radius = 0.1f;
 	[Range(0.01f, .5f)] [SerializeField] private float sliceThickness = .1f;
 	[Range(5, 100)] [SerializeField] int quality = 10;
@@ -27,10 +28,20 @@ public class LSystem : MonoBehaviour
 	private MeshFilter mf;
 	private int currentIteration;
 
+	private void OnValidate()
+	{
+		AlignToRule();
+	}
 
 	private void Start()
 	{
+		AlignToRule();
+	}
+
+	private void AlignToRule()
+	{
 		currentIteration = currentRule.iterations;
+		rotationAngle = currentRule.angle;
 	}
 
 	public void Setup()
@@ -181,7 +192,7 @@ public class LSystem : MonoBehaviour
 	private void RotateLayer(Vector3 dir, bool positive)
 	{
 		GenerateVerts(false);
-		targetTransform.Rotate(dir * (positive ? rotationAngleMax : -rotationAngleMax));
+		targetTransform.Rotate(dir * (positive ? rotationAngle : -rotationAngle));
 		GenerateSection(false);
 		CreateObjectWithMesh();
 	}
