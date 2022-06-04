@@ -17,3 +17,4 @@ MonoBehaviour:
   ruleList:
   - F-[[X]+X]+F[+FX]-X
   - FF
+  iterations: 5

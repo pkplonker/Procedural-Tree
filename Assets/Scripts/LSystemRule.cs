@@ -10,7 +10,7 @@ public class LSystemRule : ScriptableObject
 	[SerializeField] private List<char> ruleKeys;
 	[SerializeField] private List<string> ruleList;
 	public Dictionary<char, string> rules;
-
+	[Range(1, 7)]public int iterations = 5;
 
 	public void UpdateRules()
 	{

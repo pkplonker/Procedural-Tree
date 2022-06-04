@@ -12,7 +12,6 @@ public class LSystem : MonoBehaviour
 {
 	[HideInInspector] public bool debugEnabled;
 	[SerializeField] private float rotationAngleMax = 30f;
-	[Range(1, 7)] [SerializeField] private int iterations = 5;
 	[Range(0.01f, 1f)] [SerializeField] private float radius = 0.1f;
 	[Range(0.01f, .5f)] [SerializeField] private float sliceThickness = .1f;
 	[Range(5, 100)] [SerializeField] int quality = 10;
@@ -26,11 +25,12 @@ public class LSystem : MonoBehaviour
 	private List<int> triangles = new List<int>();
 	private Transform targetTransform;
 	private MeshFilter mf;
+	private int currentIteration;
 
 
 	private void Start()
 	{
-		Setup();
+		currentIteration = currentRule.iterations;
 	}
 
 	public void Setup()
@@ -40,7 +40,6 @@ public class LSystem : MonoBehaviour
 		runTimeRadius = radius;
 		branchLength = sliceThickness - (branchLength / 10);
 		transformStack = new Stack<TransformInfo>();
-		
 
 		Generate();
 		CreateObjectWithMesh();
@@ -95,7 +94,7 @@ public class LSystem : MonoBehaviour
 			"FF[--FF[[[&FFF]FFF]^FFF]][FFFF/////FFFFF][++FF[[[&FFF]FFF]^FFF]]";
 		//test string
 		currentString = currentRule.axiom;
-		for (int i = 0; i < iterations; i++)
+		for (int i = 0; i < currentIteration; i++)
 		{
 			StringBuilder sb = new StringBuilder();
 			currentRule.UpdateRules();
@@ -339,4 +338,8 @@ public class LSystem : MonoBehaviour
 			this.radius = radius;
 		}
 	}
+
+	public void SetIterations(int currentIteration) => this.currentIteration = currentIteration;
+
+	public LSystemRule GetLSystemRule() => currentRule;
 }
