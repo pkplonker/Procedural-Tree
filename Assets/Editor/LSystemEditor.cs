@@ -30,13 +30,32 @@ public class LSystemEditor : Editor
 			
 		}
 		
+		t.randomise = EditorGUILayout.Toggle("Randomise?", t.randomise);
+		EditorGUILayout.Space();
+
+		if (t.randomise)
+		{
+			EditorGUILayout.LabelField("Random options",EditorStyles.boldLabel);
+			LineBreak();
+			EditorGUILayout.LabelField("Chance variables");
+
+			//t.debugEnabled = EditorGUILayout.Slider("Random angle chance",t.randomAngle,0,1);
+			//t.debugEnabled = EditorGUILayout.Slider("Flower chance",t.flowerChance,0,1);
+			t.flowerChance = EditorGUILayout.Slider("Flower chance",t.flowerChance,0,1);
+			t.leafChance = EditorGUILayout.Slider("Leaf chance",t.leafChance,0,1);
+			t.growthChance = EditorGUILayout.Slider("Growth chance",t.growthChance,0,1);
+
+			EditorGUILayout.LabelField("Impact");
+			t.randomiseGrowthLength = EditorGUILayout.Toggle("Randomise growth length?", t.randomiseGrowthLength);
+
+
+		}
+		
 		EditorGUILayout.Space();
 		EditorGUILayout.Space();
 		DrawDefaultInspector();
 		EditorGUILayout.Space();
-		LineBreak();
 		t.debugEnabled = EditorGUILayout.Toggle("Enable Debug?", t.debugEnabled);
-		LineBreak();
 		EditorGUILayout.Space();
 		EditorGUILayout.Space();
 		if (GUILayout.Button("Save Mesh"))
@@ -50,6 +69,9 @@ public class LSystemEditor : Editor
 				Debug.LogWarning("Can only be run in play mode");
 			}
 		}
+		EditorGUILayout.Space();
+
+		
 		
 		EditorGUILayout.Space();
 		EditorGUILayout.Space();

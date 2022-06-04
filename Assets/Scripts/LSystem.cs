@@ -5,33 +5,42 @@ using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
-using Random = System.Random;
+using Random = UnityEngine.Random;
 
 
 [RequireComponent(typeof(MeshFilter))]
 [RequireComponent(typeof(MeshRenderer))]
 public class LSystem : MonoBehaviour
 {
-	[HideInInspector] public bool debugEnabled;
-	private float rotationAngle = 30f;
-
 	[SerializeField] public LSystemRule currentRule;
-	[SerializeField] private Material branchMaterial;
 	[SerializeField] private Material leafMaterial;
 	[SerializeField] private Material flowerMaterial;
-	[SerializeField] private int randomSeed;
 
-	public float runTimeRadius;
+	[HideInInspector] public bool debugEnabled;
+	[HideInInspector] public float runTimeRadius;
+
+
+	#region Randomisation
+
+	[HideInInspector] public Transform targetTransform;
+	[HideInInspector] public bool randomise;
+	[HideInInspector] public float flowerChance;
+	[HideInInspector] public float leafChance;
+	[HideInInspector] public float growthChance;
+	[HideInInspector] public bool randomiseGrowthLength;
+
+	#endregion
+
+	private float rotationAngle = 30f;
+
 	private Stack<TransformInfo> transformStack;
 	private string currentString = "";
-	float branchLength;
-
-	public Transform targetTransform;
+	private float branchLength;
 	private MeshFilter mf;
 	private int currentIteration;
 	private List<GameObject> extraParts = new List<GameObject>();
 	private ProcMeshGeneration pmg;
-	private Random prng;
+
 	public void SetIterations(int currentIteration) => this.currentIteration = currentIteration;
 
 	/// <summary>
@@ -59,7 +68,6 @@ public class LSystem : MonoBehaviour
 	/// </summary>
 	public void Setup()
 	{
-		prng = new Random(randomSeed);
 		pmg ??= new ProcMeshGeneration(this, debugEnabled);
 		mf = GetComponent<MeshFilter>();
 		mf.mesh = null;
@@ -145,10 +153,7 @@ public class LSystem : MonoBehaviour
 			switch (t)
 			{
 				case 'F': //straight line
-					pmg.GenerateVerts(false);
-					targetTransform.position += (targetTransform.up * branchLength);
-					GenerateSection(true);
-					CreateObjectWithMesh();
+					Grow();
 					break;
 				case 'f': //nothing
 					break;
@@ -199,6 +204,27 @@ public class LSystem : MonoBehaviour
 	}
 
 	/// <summary>
+	///   <para>Grows tree section</para>
+	/// </summary>
+	private void Grow()
+	{
+		if (randomise && growthChance < Random.value) return;
+		pmg.GenerateVerts(false);
+		if (randomise && randomiseGrowthLength)
+		{
+			float randomBranchLength = Random.Range(0, branchLength*2);
+			targetTransform.position += targetTransform.up * randomBranchLength;
+		}
+		else
+		{
+			targetTransform.position += targetTransform.up * branchLength;
+		}
+
+		GenerateSection(true);
+		CreateObjectWithMesh();
+	}
+
+	/// <summary>
 	///   <para>Runs L System string generation</para>
 	/// </summary>
 	private void BuildString()
@@ -212,40 +238,8 @@ public class LSystem : MonoBehaviour
 			for (int j = 0; j < currentString.Length; j++)
 			{
 				char letter = currentString[j];
-				float value;
-				if (j!=currentString.Length-1 &&   currentString[j+1] == '(')
-				{
-					string s="";
-					
-					for (int k = 0; k < 7; k++)
-					{
-						if (currentString[j + k+2] == ')') break;
-						s += currentString[j + k+2];
-					}
-					Debug.Log("string val = " + s);
-					value = float.Parse(s);
-					Debug.Log("float val = " + value);
 
-					if (value>= UnityEngine.Random.value)
-					{
-						sb.Append(currentRule.rules.ContainsKey(letter) ? currentRule.rules[letter] : letter.ToString());
-						sb.Append(currentRule.rules.ContainsKey(currentString[j+s.Length+3]) ? currentRule.rules[currentString[j+s.Length+3]] : letter.ToString());
-						j += s.Length+3;
-						Debug.Log("passed random");
-					}
-					else
-					{
-						sb.Append(currentRule.rules.ContainsKey(letter) ? currentRule.rules[letter] : letter.ToString());
-
-						j += s.Length+4;
-						Debug.Log("failed random");
-
-					}
-				}
-				else
-				{
-					sb.Append(currentRule.rules.ContainsKey(letter) ? currentRule.rules[letter] : letter.ToString());
-				}
+				sb.Append(currentRule.rules.ContainsKey(letter) ? currentRule.rules[letter] : letter.ToString());
 			}
 
 
@@ -258,6 +252,7 @@ public class LSystem : MonoBehaviour
 	/// </summary>
 	private void ProduceFlower()
 	{
+		if (randomise && flowerChance < Random.value) return;
 		GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
 		extraParts.Add(sphere);
 		sphere.transform.position = targetTransform.position;
@@ -271,6 +266,7 @@ public class LSystem : MonoBehaviour
 	/// </summary>
 	private void ProduceLeaf()
 	{
+		if (randomise && leafChance < Random.value) return;
 		GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
 		extraParts.Add(sphere);
 		sphere.transform.position = targetTransform.position;
