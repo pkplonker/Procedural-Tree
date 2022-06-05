@@ -13,8 +13,9 @@ using Random = UnityEngine.Random;
 public class LSystem : MonoBehaviour
 {
 	[SerializeField] public LSystemRule currentRule;
-	[SerializeField] private Material leafMaterial;
-	[SerializeField] private Material flowerMaterial;
+
+	[SerializeField] private Color leafColor = Color.green;
+	[SerializeField] private Color fruitColor = Color.red;
 
 	[HideInInspector] public bool debugEnabled;
 	[HideInInspector] public float runTimeRadius;
@@ -29,10 +30,14 @@ public class LSystem : MonoBehaviour
 	[HideInInspector] public float growthChance;
 	[HideInInspector] public bool randomiseGrowthLength;
 	[HideInInspector] public bool randomiseAngle;
+	[HideInInspector] public bool randomiseLeafColor;
+	[HideInInspector] public bool randomiseFruitColor;
 
 	#endregion
 
 	private float rotationAngle = 30f;
+	private Material leafMaterial;
+	private Material fruitMaterial;
 
 	private Stack<TransformInfo> transformStack;
 	private string currentString = "";
@@ -75,7 +80,7 @@ public class LSystem : MonoBehaviour
 		runTimeRadius = currentRule.radius;
 		branchLength = currentRule.sliceThickness - (branchLength / 10);
 		transformStack = new Stack<TransformInfo>();
-
+		SetColors();
 		if (targetTransform == null)
 			targetTransform = new GameObject("target").transform;
 		else
@@ -92,6 +97,33 @@ public class LSystem : MonoBehaviour
 		Generate();
 		CreateObjectWithMesh();
 		CombineMeshes();
+	}
+
+	private void SetColors()
+	{
+		if (randomise && randomiseLeafColor)
+		{
+			leafMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"))
+			{
+				color = new Color(Random.Range(.29f, .74f), Random.Range(.29f, .74f), .18f, 1f)
+			};
+		}
+		else
+		{
+			leafMaterial.color = leafColor;
+		}
+
+		if (randomise && randomiseFruitColor)
+		{
+			fruitMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"))
+			{
+				color = new Color(Random.Range(.17f, .74f), .18f, Random.Range(.17f, .74f), 1f)
+			};
+		}
+		else
+		{
+			fruitMaterial.color = fruitColor;
+		}
 	}
 
 	/// <summary>
@@ -162,7 +194,7 @@ public class LSystem : MonoBehaviour
 					break;
 				case 'S': //Flower
 					if (currentIteration < (currentRule.iterations / 2)) break;
-					ProduceFlower();
+					ProduceFruit();
 					break;
 				case 'L': //Leaf
 					if (currentIteration < (currentRule.iterations / 2)) break;
@@ -195,8 +227,9 @@ public class LSystem : MonoBehaviour
 					targetTransform.position = ti.position;
 					targetTransform.rotation = ti.rotation;
 					runTimeRadius = ti.radius;
-					pmg.GenerateVerts(false);
-					pmg.Clear();
+					ProcMeshGeneration.GenerateVerts(false, currentRule.quality, ref runTimeRadius,
+						targetTransform.position, debugEnabled, pmg.vertices, currentRule.radiusReductionFactor);
+					ProcMeshGeneration.Clear(pmg.vertices, pmg.triangles);
 					break;
 				default:
 					break;
@@ -210,10 +243,11 @@ public class LSystem : MonoBehaviour
 	private void Grow()
 	{
 		if (randomise && growthChance < Random.value) return;
-		pmg.GenerateVerts(false);
+		ProcMeshGeneration.GenerateVerts(false, currentRule.quality, ref runTimeRadius, targetTransform.position,
+			debugEnabled, pmg.vertices, currentRule.radiusReductionFactor);
 		if (randomise && randomiseGrowthLength)
 		{
-			float randomBranchLength = Random.Range(0, branchLength*2);
+			float randomBranchLength = Random.Range(0, branchLength * 2);
 			targetTransform.position += targetTransform.up * randomBranchLength;
 		}
 		else
@@ -249,9 +283,9 @@ public class LSystem : MonoBehaviour
 	}
 
 	/// <summary>
-	///   <para>Generates flower object</para>
+	///   <para>Generates fruit object</para>
 	/// </summary>
-	private void ProduceFlower()
+	private void ProduceFruit()
 	{
 		if (randomise && flowerChance < Random.value) return;
 		GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -259,7 +293,7 @@ public class LSystem : MonoBehaviour
 		sphere.transform.position = targetTransform.position;
 		sphere.transform.localScale =
 			new Vector3(currentRule.radius / 2, currentRule.radius / 2, currentRule.radius / 2);
-		sphere.GetComponent<MeshRenderer>().material = flowerMaterial;
+		sphere.GetComponent<MeshRenderer>().material = fruitMaterial;
 	}
 
 	/// <summary>
@@ -283,19 +317,19 @@ public class LSystem : MonoBehaviour
 	/// <param name="positive">true = positive, false = negative</param>
 	private void RotateLayer(Vector3 dir, bool positive)
 	{
-		pmg.GenerateVerts(false);
+		ProcMeshGeneration.GenerateVerts(false, currentRule.quality, ref runTimeRadius, targetTransform.position,
+			debugEnabled, pmg.vertices, currentRule.radiusReductionFactor);
 
 		if (randomise && randomiseAngle)
 		{
 			float randomAngle = Random.Range(positive ? 0 : -rotationAngle * 2, positive ? rotationAngle * 2 : 0);
 			targetTransform.Rotate(dir * (randomAngle));
-
 		}
 		else
 		{
 			targetTransform.Rotate(dir * (positive ? rotationAngle : -rotationAngle));
-
 		}
+
 		GenerateSection(false);
 		CreateObjectWithMesh();
 	}
@@ -318,7 +352,7 @@ public class LSystem : MonoBehaviour
 			}
 		};
 		var mff = ob.AddComponent<MeshFilter>();
-		mff.mesh = GenerateMesh();
+		mff.mesh = ProcMeshGeneration.GenerateMesh(pmg.vertices, pmg.triangles);
 	}
 
 
@@ -334,23 +368,6 @@ public class LSystem : MonoBehaviour
 			mf.mesh = null;
 	}
 
-	/// <summary>
-	///   <para>Generates mesh from previously generated list of verts and triangles</para>
-	/// <returns>Mesh of produced section</returns>
-	/// </summary>
-	private Mesh GenerateMesh()
-	{
-		Mesh mesh = new Mesh
-		{
-			name = "New tree"
-		};
-		mesh.Clear();
-		mesh.SetVertices(pmg.vertices);
-		mesh.SetTriangles(pmg.triangles, 0);
-		mesh.RecalculateNormals();
-		pmg.Clear();
-		return mesh;
-	}
 
 	/// <summary>
 	///   <para>Generates verts and associated triangles for new mesh section</para>
@@ -358,8 +375,9 @@ public class LSystem : MonoBehaviour
 	/// </summary>
 	private void GenerateSection(bool reduceRad)
 	{
-		pmg.GenerateVerts(reduceRad);
-		pmg.GenerateTriangles();
+		ProcMeshGeneration.GenerateVerts(reduceRad, currentRule.quality, ref runTimeRadius, targetTransform.position,
+			debugEnabled, pmg.vertices, currentRule.radiusReductionFactor);
+		ProcMeshGeneration.GenerateTriangles(currentRule.quality, pmg.vertices, pmg.triangles);
 	}
 
 	/// <summary>

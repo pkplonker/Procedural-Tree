@@ -16,5 +16,9 @@ MonoBehaviour:
   ruleKeys: 4600
   ruleList:
   - F[+F]F[-F]F
-  iterations: 5
-  angle: 25.7
+  radius: 0.205
+  sliceThickness: 0.07
+  quality: 10
+  radiusReductionFactor: 4.39
+  iterations: 6
+  angle: 40

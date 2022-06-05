@@ -720,13 +720,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91da3c4b82b36a4468a9272657db5386, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentRule: {fileID: 11400000, guid: eba012f2aab3ed040970f4886e4e3747, type: 2}
+  leafColor: {r: 0.06607032, g: 1, b: 0, a: 1}
+  fruitColor: {r: 1, g: 0, b: 0, a: 1}
   debugEnabled: 0
-  currentRule: {fileID: 11400000, guid: bb4d3b9d145e8a644b8cab0e0d03fcdf, type: 2}
-  branchMaterial: {fileID: 2100000, guid: 625ade8b9ea7d0d4d82c61201415e6f8, type: 2}
-  leafMaterial: {fileID: 2100000, guid: 3ac0908ec0c94e341901b7588d2b0984, type: 2}
-  flowerMaterial: {fileID: 2100000, guid: 7d0551e93e223744782261542887824c, type: 2}
   runTimeRadius: 0
   targetTransform: {fileID: 0}
+  randomise: 1
+  flowerChance: 1
+  leafChance: 1
+  growthChance: 1
+  randomiseGrowthLength: 0
+  randomiseAngle: 1
+  randomiseLeafColor: 1
+  randomiseFruitColor: 1
 --- !u!4 &2063336225
 Transform:
   m_ObjectHideFlags: 0

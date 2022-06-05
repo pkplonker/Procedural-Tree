@@ -25,17 +25,17 @@ public class ProcMeshGeneration
 	///   <para>Generates verts based of target radius & quality</para>
 	/// <param name="reduceRad">True to reduce radius of verts</param>
 	/// </summary>
-	public void GenerateVerts(bool reduceRad)
+	public static void GenerateVerts(bool reduceRad,int quality,ref float radius,Vector3 position, bool debugEnabled, List<Vector3> vertices, float radiusReductionFactor, float ypos=0)
 	{
 		if (reduceRad)
 		{
-			lSystem.runTimeRadius = lSystem.runTimeRadius -
-			                        ((lSystem.runTimeRadius / 100) * (lSystem.currentRule.radiusReductionFactor));
+			radius = radius -
+			         ((radius / 100) * (radiusReductionFactor));
 		}
 
-		for (int y = 0; y < lSystem.currentRule.quality; y++)
+		for (int y = 0; y < quality; y++)
 		{
-			vertices.Add(CalculateVertPosition(y));
+			vertices.Add(CalculateRadialVertPosition(y,quality,radius, position,debugEnabled,ypos));
 		}
 	}
 
@@ -44,15 +44,15 @@ public class ProcMeshGeneration
 	/// <param name="vertIndexAroundCircumference">Number of points within disc</param>
 	/// <returns>Returns Vector3 position of new vert position</returns>
 	/// </summary>
-	private Vector3 CalculateVertPosition(int vertIndexAroundCircumference)
+	public static Vector3 CalculateRadialVertPosition(int vertIndexAroundCircumference, int quality, float radius,Vector3 position, bool debugEnabled, float y = 0)
 	{
-		float angleRadians = vertIndexAroundCircumference / (float) lSystem.currentRule.quality *
+		float angleRadians = vertIndexAroundCircumference / (float) quality *
 		                     MathFunctions.TAU;
 
-		Vector3 pos = lSystem.targetTransform.position + new Vector3(
-			Mathf.Cos(angleRadians) * lSystem.runTimeRadius,
-			0,
-			Mathf.Sin(angleRadians) * lSystem.runTimeRadius
+		Vector3 pos = position + new Vector3(
+			Mathf.Cos(angleRadians) * radius,
+			y,
+			Mathf.Sin(angleRadians) * radius
 		);
 		if (debugEnabled)
 		{
@@ -63,7 +63,7 @@ public class ProcMeshGeneration
 			sphere.GetComponent<MeshRenderer>().sharedMaterial.color = Color.red;
 			GameObject s = GameObject.CreatePrimitive(PrimitiveType.Sphere);
 			s.name = "centre";
-			s.transform.position = lSystem.targetTransform.position;
+			s.transform.position = position;
 			s.transform.localScale = Vector3.one * 0.02f;
 			s.GetComponent<MeshRenderer>().material.color = Color.blue;
 		}
@@ -74,11 +74,11 @@ public class ProcMeshGeneration
 	/// <summary>
 	///   <para>Generates Triangles for mesh</para>
 	/// </summary>
-	public void GenerateTriangles()
+	public static void GenerateTriangles(int quality, List<Vector3> vertices,List<int>triangles)
 	{
-		for (int i = 0; i < (vertices.Count / lSystem.currentRule.quality) - 1; i++)
+		for (int i = 0; i < (vertices.Count / quality) - 1; i++)
 		{
-			GenerateLayerTriangles(i);
+			GenerateLayerTriangles(i,quality, triangles);
 		}
 	}
 
@@ -86,15 +86,15 @@ public class ProcMeshGeneration
 	///   <para>Generates Triangles for one layer of mesh</para>
 	/// <param name="layer">Number of verts in disc(Quality level)</param>
 	/// </summary>
-	private void GenerateLayerTriangles(int layer)
+	private static void GenerateLayerTriangles(int layer, int quality, List<int>triangles)
 	{
-		int layerAddition = layer * lSystem.currentRule.quality;
-		for (int i = 0; i < lSystem.currentRule.quality - 1; i++)
+		int layerAddition = layer * quality;
+		for (int i = 0; i < quality - 1; i++)
 		{
 			var root = i + layerAddition;
 			var rootLeft = root + 1;
-			int rootUpleft = root + lSystem.currentRule.quality + 1;
-			int rootUp = root + lSystem.currentRule.quality;
+			int rootUpleft = root + quality + 1;
+			int rootUp = root + quality;
 
 
 			triangles.Add(root);
@@ -105,10 +105,10 @@ public class ProcMeshGeneration
 			triangles.Add(rootUpleft);
 		}
 
-		int start = lSystem.currentRule.quality - 1 + layerAddition;
+		int start = quality - 1 + layerAddition;
 		int startLeft = layerAddition;
 		int startLeftUp = start + 1;
-		int startup = start + lSystem.currentRule.quality;
+		int startup = start + quality;
 
 		triangles.Add(start);
 		triangles.Add(startLeftUp);
@@ -121,9 +121,27 @@ public class ProcMeshGeneration
 	/// <summary>
 	///   <para>Clears vert and tri data</para>
 	/// </summary>
-	public void Clear()
+	public static void Clear(List<Vector3> vertices, List<int> triangles)
 	{
 		vertices.Clear();
 		triangles.Clear();
+	}
+	
+	/// <summary>
+	///   <para>Generates mesh from previously generated list of verts and triangles</para>
+	/// <returns>Mesh of produced section</returns>
+	/// </summary>
+	public static Mesh GenerateMesh(List<Vector3> vertices, List<int> triangles, string n = "Tree")
+	{
+		Mesh mesh = new Mesh
+		{
+			name = n
+		};
+		mesh.Clear();
+		mesh.SetVertices(vertices);
+		mesh.SetTriangles(triangles, 0);
+		mesh.RecalculateNormals();
+		Clear(vertices,triangles);
+		return mesh;
 	}
 }

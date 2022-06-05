@@ -20,6 +20,6 @@ MonoBehaviour:
   radius: 0.1
   sliceThickness: 0.1
   quality: 10
-  radiusReductionFactor: 6
+  radiusReductionFactor: 5.46
   iterations: 4
   angle: 22.5

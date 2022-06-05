@@ -17,5 +17,9 @@ MonoBehaviour:
   ruleList:
   - F[+X]F[-X]+X
   - FF
+  radius: 0.501
+  sliceThickness: 0.07
+  quality: 10
+  radiusReductionFactor: 0.58
   iterations: 7
   angle: 20

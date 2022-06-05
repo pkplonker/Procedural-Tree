@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d251ecaf201650645b73badefdadf7e7, type: 3}
-  m_Name: B Example
+  m_Name: RandomTest
   m_EditorClassIdentifier: 
   axiom: F
   ruleKeys: 4600
   ruleList:
-  - F[+F]F[-F][F]
+  - FF-[-F+F+F]+[+F-F-F]^[^F&F+F]&[+F^F&F]
   radius: 0.1
-  sliceThickness: 0.1
+  sliceThickness: 0.196
   quality: 10
-  radiusReductionFactor: 3.52
-  iterations: 6
-  angle: 28.98
+  radiusReductionFactor: 1.72
+  iterations: 4
+  angle: 22.5

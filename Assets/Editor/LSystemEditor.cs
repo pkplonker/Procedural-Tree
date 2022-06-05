@@ -46,8 +46,10 @@ public class LSystemEditor : Editor
 			t.growthChance = EditorGUILayout.Slider("Growth chance",t.growthChance,0,1);
 
 			EditorGUILayout.LabelField("Impact");
-			t.randomiseGrowthLength = EditorGUILayout.Toggle("Randomise growth?", t.randomiseGrowthLength);
-			t.randomiseAngle = EditorGUILayout.Toggle("Randomise Angles?", t.randomiseAngle);
+			t.randomiseGrowthLength = EditorGUILayout.Toggle("Growth?", t.randomiseGrowthLength);
+			t.randomiseAngle = EditorGUILayout.Toggle("Angles?", t.randomiseAngle);
+			t.randomiseLeafColor = EditorGUILayout.Toggle("Leaf Color?", t.randomiseLeafColor);
+			t.randomiseFruitColor = EditorGUILayout.Toggle("Fruit Color?", t.randomiseFruitColor);
 
 
 		}
